@@ -7,7 +7,7 @@ import QRCode from 'qrcode';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BASE_URL = 'https://krishnakumarsabbu-prog.github.io/TECH_SUMMIT/';
+const BASE_URL = 'https://innovation-showcase-2026.github.io/TechQUIZ/';
 const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'qr-codes');
 const ROOT_QR_DIR = path.join(__dirname, '..', 'qr-codes');
 
