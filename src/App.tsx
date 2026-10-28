@@ -433,7 +433,6 @@ export default function App() {
           isWinner={isWinner}
           onOpenPassport={participant ? handleOpenPassport : undefined}
           isPassportActive={stage === 'PASSPORT'}
-          onGoHome={() => setStage('WELCOME')}
         />
       )}
       <Layout wide={stage === 'WELCOME' && !loadError}>
