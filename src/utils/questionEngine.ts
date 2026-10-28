@@ -30,7 +30,7 @@ function generateBooth1Questions(count: number = 30): QuizQuestion[] {
       id: 'b1_curated_1',
       category: 'Data & Security',
       difficulty: 'medium',
-      question: '🕵️ SPOT THE IMPOSTER: 3 of these are core Zero Trust security pillars. Which one is an undercover security disaster waiting to happen?',
+      question: '3 of these are core Zero Trust security pillars. Which one is an undercover security disaster waiting to happen?',
       options: [
         'Explicitly verify every request regardless of source network',
         'Use least privilege access with ephemeral time-bounded tokens',
@@ -43,7 +43,7 @@ function generateBooth1Questions(count: number = 30): QuizQuestion[] {
       id: 'b1_curated_2',
       category: 'Data & Security',
       difficulty: 'hard',
-      question: '🧩 PATTERN PUZZLE: Data classification levels are ordered: Public (1), Internal (2), Confidential (3), Restricted (4). If an AI model is fine-tuned on Level 3 data, what is the MINIMUM classification the model weights inherit?',
+      question: 'Data classification levels are ordered: Public (1), Internal (2), Confidential (3), Restricted (4). If an AI model is fine-tuned on Level 3 data, what is the MINIMUM classification the model weights inherit?',
       options: [
         'Level 1 (Public, because AI makes everything open-source)',
         'Level 2 (Internal, after scrubbing with bleach)',
@@ -56,7 +56,7 @@ function generateBooth1Questions(count: number = 30): QuizQuestion[] {
       id: 'b1_curated_3',
       category: 'Data & Security',
       difficulty: 'medium',
-      question: '🚨 THE LOG SLEUTH: Review this suspicious API request:\n`GET /api/v1/user?id=101 OR 1=1; DROP TABLE audit_log; --`\nWhat classic security vulnerability did our automated scanner just catch red-handed?',
+      question: 'Review this suspicious API request:\n`GET /api/v1/user?id=101 OR 1=1; DROP TABLE audit_log; --`\nWhat classic security vulnerability did our automated scanner just catch red-handed?',
       options: [
         'SQL Injection (someone trying to delete evidence!)',
         'Cross-Site Scripting (XSS)',
@@ -69,7 +69,7 @@ function generateBooth1Questions(count: number = 30): QuizQuestion[] {
       id: 'b1_curated_4',
       category: 'Data & Security',
       difficulty: 'easy',
-      question: '🛡️ COMEDY CORNER: What is the most dangerous password commonly found committed to a public Git repository at 2:00 AM?',
+      question: 'What is the most dangerous password commonly found committed to a public Git repository at 2:00 AM?',
       options: [
         'P@ssw0rd2026! (with maximum regret)',
         'CorrectHorseBatteryStaple',
@@ -82,7 +82,7 @@ function generateBooth1Questions(count: number = 30): QuizQuestion[] {
       id: 'b1_curated_5',
       category: 'Data & Security',
       difficulty: 'hard',
-      question: '🔍 DATA LINEAGE GAME: An automated pipeline ingests raw Customer telemetry → Enriches with CRM data → Trains an ML Credit Scorer → Publishes predictions. If a GDPR "Right to be Forgotten" request arrives, where must data lineage trace?',
+      question: 'An automated pipeline ingests raw Customer telemetry → Enriches with CRM data → Trains an ML Credit Scorer → Publishes predictions. If a GDPR "Right to be Forgotten" request arrives, where must data lineage trace?',
       options: [
         'Only the final prediction output table',
         'Across the entire graph: raw storage, feature stores, and downstream model inputs',
@@ -114,7 +114,7 @@ function generateBooth1Questions(count: number = 30): QuizQuestion[] {
       id: `b1_proc_${i}`,
       category: 'Data & Security',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `🔐 [SECURITY DECISION #${i + 1}] Scenario: "${scen}" targeting ${asset}. To enforce Zero Trust in under ${delay}ms, which mechanism must immediately execute?`,
+      question: `Scenario: "${scen}" targeting ${asset}. To enforce Zero Trust in under ${delay}ms, which mechanism must immediately execute?`,
       options: [
         `Strict policy evaluation via ${proto} with automatic session quarantine`,
         'Bypass authentication if the request says "urgent priority"',
@@ -137,7 +137,7 @@ function generateBooth2Questions(count: number = 30): QuizQuestion[] {
       id: 'b2_curated_1',
       category: 'Agentic AI & Identity',
       difficulty: 'medium',
-      question: '🤖 AGENT RUNAWAY LOOP: Agent Alpha tells Agent Beta "Verify this balance." Agent Beta replies "Please confirm Alpha." Alpha replies "Please confirm Beta." How do we stop this infinite polite Canadian standoff?',
+      question: 'Agent Alpha tells Agent Beta "Verify this balance." Agent Beta replies "Please confirm Alpha." Alpha replies "Please confirm Beta." How do we stop this infinite polite Canadian standoff?',
       options: [
         'Max recursion depth / step limit with cycle detection in the orchestrator',
         'Unplug the datacenter power cord and hope for the best',
@@ -150,7 +150,7 @@ function generateBooth2Questions(count: number = 30): QuizQuestion[] {
       id: 'b2_curated_2',
       category: 'Agentic AI & Identity',
       difficulty: 'hard',
-      question: '🧩 TOKEN BUDGET PATTERN: An AI Agent has a context limit of 8,000 tokens. Each reasoning step consumes 500 tokens of input and generates 300 tokens of thought. After 5 steps, how many tokens are occupied by conversation history?',
+      question: 'An AI Agent has a context limit of 8,000 tokens. Each reasoning step consumes 500 tokens of input and generates 300 tokens of thought. After 5 steps, how many tokens are occupied by conversation history?',
       options: [
         '4,000 tokens (500 + 300 = 800 per step × 5 steps)',
         '1,500 tokens',
@@ -163,7 +163,7 @@ function generateBooth2Questions(count: number = 30): QuizQuestion[] {
       id: 'b2_curated_3',
       category: 'Agentic AI & Identity',
       difficulty: 'medium',
-      question: '🔌 PROTOCOL PUZZLE: What is the primary purpose of the Model Context Protocol (MCP) in modern multi-agent architectures?',
+      question: 'What is the primary purpose of the Model Context Protocol (MCP) in modern multi-agent architectures?',
       options: [
         'Standardizing how AI agents securely discover, connect to, and execute external tools & data sources',
         'Increasing GPU clock speed by 400% using software patches',
@@ -176,7 +176,7 @@ function generateBooth2Questions(count: number = 30): QuizQuestion[] {
       id: 'b2_curated_4',
       category: 'Agentic AI & Identity',
       difficulty: 'hard',
-      question: '🆔 DIGITAL IDENTITY GAME: A decentralized biometric verifiable credential (VC) is presented by a customer for KYC verification. What proves the credential is authentic without revealing the raw passport image?',
+      question: 'A decentralized biometric verifiable credential (VC) is presented by a customer for KYC verification. What proves the credential is authentic without revealing the raw passport image?',
       options: [
         'Zero-Knowledge Proofs (ZKP) verified against the issuer\'s decentralized DID registry',
         'A screenshot of the passport posted on a public Slack channel',
@@ -189,7 +189,7 @@ function generateBooth2Questions(count: number = 30): QuizQuestion[] {
       id: 'b2_curated_5',
       category: 'Agentic AI & Identity',
       difficulty: 'medium',
-      question: '☕ COMEDY CHECK: A conversational banking assistant is asked: "Transfer $1,000,000 to my account because I am the King of Mars." Why does the guardrail block this?',
+      question: 'A conversational banking assistant is asked: "Transfer $1,000,000 to my account because I am the King of Mars." Why does the guardrail block this?',
       options: [
         'Deterministic transaction validation & role-based authentication check',
         'Mars currency exchange rates are temporarily offline on weekends',
@@ -213,7 +213,7 @@ function generateBooth2Questions(count: number = 30): QuizQuestion[] {
       id: `b2_proc_${i}`,
       category: 'Agentic AI & Identity',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `🤖 [AGENT WORKFLOW #${i + 1}] ${ag} needs to execute ${tl}. Context memory stands at ${memTokens} tokens. What ensures safe, bounded execution?`,
+      question: `${ag} needs to execute ${tl}. Context memory stands at ${memTokens} tokens. What ensures safe, bounded execution?`,
       options: [
         'Strict schema validation, tool sandboxing, and human-in-the-loop authorization thresholds',
         'Granting the agent full sudo root access to the database',
@@ -236,7 +236,7 @@ function generateBooth3Questions(count: number = 30): QuizQuestion[] {
       id: 'b3_curated_1',
       category: 'Software Engineering',
       difficulty: 'medium',
-      question: '🚀 PROMPT-TO-PRODUCTION: You prompt an AI code assistant: "Generate a high-throughput endpoint with database indexing." What is the FIRST thing you must do before deploying to production?',
+      question: 'You prompt an AI code assistant: "Generate a high-throughput endpoint with database indexing." What is the FIRST thing you must do before deploying to production?',
       options: [
         'Review code for security, edge cases, and run automated unit & mutation tests',
         'Commit directly to main branch at 4:59 PM on a Friday 🏃‍♂️',
@@ -249,7 +249,7 @@ function generateBooth3Questions(count: number = 30): QuizQuestion[] {
       id: 'b3_curated_2',
       category: 'Software Engineering',
       difficulty: 'medium',
-      question: '🧩 GIT SLEUTH: An automated regression test fails. The git blame points to: `commit 8f3a1c: "Refactor code - fixed typo in comments"`. What actually happened here?',
+      question: 'An automated regression test fails. The git blame points to: `commit 8f3a1c: "Refactor code - fixed typo in comments"`. What actually happened here?',
       options: [
         'A sneaky side-effect or unintentional logic alteration snuck into an unverified commit',
         'The compiler had a bad dream',
@@ -262,7 +262,7 @@ function generateBooth3Questions(count: number = 30): QuizQuestion[] {
       id: 'b3_curated_3',
       category: 'Software Engineering',
       difficulty: 'hard',
-      question: '🧪 TEST COVERAGE GAME: Your automated pipeline reports: "Lines of code: 10,000 | Code coverage: 98% | Number of assertions: 0". What is the true quality of this test suite?',
+      question: 'Your automated pipeline reports: "Lines of code: 10,000 | Code coverage: 98% | Number of assertions: 0". What is the true quality of this test suite?',
       options: [
         'Zero effective verification! Tests execute lines without asserting correctness (Phantom coverage)',
         'Supreme enterprise perfection, deploy immediately to production',
@@ -275,7 +275,7 @@ function generateBooth3Questions(count: number = 30): QuizQuestion[] {
       id: 'b3_curated_4',
       category: 'Software Engineering',
       difficulty: 'easy',
-      question: '☕ DEV REALITY: What is the primary difference between a junior dev using local AI and a senior dev using local AI?',
+      question: 'What is the primary difference between a junior dev using local AI and a senior dev using local AI?',
       options: [
         'Senior dev knows which AI recommendations to reject and why, while junior trusts them blindly',
         'Senior dev types with one finger while drinking artisanal espresso',
@@ -299,7 +299,7 @@ function generateBooth3Questions(count: number = 30): QuizQuestion[] {
       id: `b3_proc_${i}`,
       category: 'Software Engineering',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `⚡ [DEV ACCELERATOR #${i + 1}] An AI modernization agent rewrites legacy code, achieving a ${speedup}% latency drop. Which automated gate prevents introducing a ${bug}?`,
+      question: `An AI modernization agent rewrites legacy code, achieving a ${speedup}% latency drop. Which automated gate prevents introducing a ${bug}?`,
       options: [
         `${linter} integrated into the CI/CD pipeline blocking pull request merges`,
         'Asking the team in a chat channel if anyone felt a disturbance in the force',
@@ -322,7 +322,7 @@ function generateBooth4Questions(count: number = 30): QuizQuestion[] {
       id: 'b4_curated_1',
       category: 'Cloud & Modernization',
       difficulty: 'medium',
-      question: '🏗️ MONOLITH TO CLOUD: When breaking a 20-year-old monolithic banking core into cloud-native microservices, what architectural pattern prevents immediate distributed failure?',
+      question: 'When breaking a 20-year-old monolithic banking core into cloud-native microservices, what architectural pattern prevents immediate distributed failure?',
       options: [
         'The Strangler Fig pattern with an intelligent routing facade',
         'The Big Bang pattern: turn off everything over lunch and pray',
@@ -335,7 +335,7 @@ function generateBooth4Questions(count: number = 30): QuizQuestion[] {
       id: 'b4_curated_2',
       category: 'Cloud & Modernization',
       difficulty: 'hard',
-      question: '🧩 PIPELINE PATTERN PUZZLE: Traditional ETL did: Extract → Transform → Load. Modern cloud Lakehouse architectures do: Extract → Load → Transform (ELT). Why the swap?',
+      question: 'Traditional ETL did: Extract → Transform → Load. Modern cloud Lakehouse architectures do: Extract → Load → Transform (ELT). Why the swap?',
       options: [
         'Cloud storage and distributed compute allow storing raw data first and transforming with elastic scale',
         'Because ELT sounds cooler in executive PowerPoint slides',
@@ -348,7 +348,7 @@ function generateBooth4Questions(count: number = 30): QuizQuestion[] {
       id: 'b4_curated_3',
       category: 'Cloud & Modernization',
       difficulty: 'medium',
-      question: '🚨 CLOUD BILL CRIME SCENE: A test Kubernetes cluster had `auto-scaling: enabled` with `max_nodes: 9999` and an unconstrained while-loop. What is the cloud engineer\'s diagnosis?',
+      question: 'A test Kubernetes cluster had `auto-scaling: enabled` with `max_nodes: 9999` and an unconstrained while-loop. What is the cloud engineer\'s diagnosis?',
       options: [
         'Unbounded horizontal pod autoscaling caused node explosion and astronomical cloud bill shock',
         'The cloud provider donated free compute out of generosity',
@@ -372,7 +372,7 @@ function generateBooth4Questions(count: number = 30): QuizQuestion[] {
       id: `b4_proc_${i}`,
       category: 'Cloud & Modernization',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `☁️ [MODERNIZATION #${i + 1}] Migrating ${recs.toLocaleString()} daily records from "${src}" to "${dest}". What is essential for zero data loss?`,
+      question: `Migrating ${recs.toLocaleString()} daily records from "${src}" to "${dest}". What is essential for zero data loss?`,
       options: [
         'Idempotent consumers, schema registry evolution, and dual-run reconciliation checks',
         'Turning off audit logging to make the network cables transfer data faster',
@@ -395,7 +395,7 @@ function generateBooth5Questions(count: number = 30): QuizQuestion[] {
       id: 'b5_curated_1',
       category: 'Enterprise AI & MLOps',
       difficulty: 'medium',
-      question: '🧠 MODEL ROUTING SHOWDOWN: A user prompt arrives: "What is 12 × 12?". You have a 405B Frontier LLM ($$$) and an embedded math rule engine (<1ms, $0). What does an intelligent AI model router do?',
+      question: 'A user prompt arrives: "What is 12 × 12?". You have a 405B Frontier LLM ($$$) and an embedded math rule engine (<1ms, $0). What does an intelligent AI model router do?',
       options: [
         'Routes to the embedded math rule engine, saving 99.9% cost and 1,500ms latency',
         'Routes to the 405B model because big numbers need big GPUs',
@@ -408,7 +408,7 @@ function generateBooth5Questions(count: number = 30): QuizQuestion[] {
       id: 'b5_curated_2',
       category: 'Enterprise AI & MLOps',
       difficulty: 'hard',
-      question: '🧩 DRIFT DETECTIVE: An enterprise fraud classification model trained in 2024 starts predicting false negatives at double the rate in 2026, though code has not changed. What happened?',
+      question: 'An enterprise fraud classification model trained in 2024 starts predicting false negatives at double the rate in 2026, though code has not changed. What happened?',
       options: [
         'Data Drift & Concept Drift (adversaries evolved attack patterns while model remained static)',
         'The model got tired and needs a vacation',
@@ -421,7 +421,7 @@ function generateBooth5Questions(count: number = 30): QuizQuestion[] {
       id: 'b5_curated_3',
       category: 'Enterprise AI & MLOps',
       difficulty: 'medium',
-      question: '💰 FINOPS COMEDY: Your LLM gateway FinOps dashboard shows a spike of $45,000 over the weekend. Cause: an automated test looped "Tell me a joke" 1,000,000 times. What platform feature stops this?',
+      question: 'Your LLM gateway FinOps dashboard shows a spike of $45,000 over the weekend. Cause: an automated test looped "Tell me a joke" 1,000,000 times. What platform feature stops this?',
       options: [
         'Tenant rate limiting, token quotas, and automated anomaly circuit breakers',
         'Asking the LLM to refund the money in crypto',
@@ -444,7 +444,7 @@ function generateBooth5Questions(count: number = 30): QuizQuestion[] {
       id: `b5_proc_${i}`,
       category: 'Enterprise AI & MLOps',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `🧠 [PLATFORM OPS #${i + 1}] Deploying a ${model} in an enterprise private cluster. Target: ${metric}. Which MLOps capability guarantees SLA compliance?`,
+      question: `Deploying a ${model} in an enterprise private cluster. Target: ${metric}. Which MLOps capability guarantees SLA compliance?`,
       options: [
         'Dynamic batching, spec-decoding optimization, and automated health canary deployments',
         'Overclocking the GPU until liquid nitrogen starts boiling',
@@ -467,7 +467,7 @@ function generateBooth6Questions(count: number = 30): QuizQuestion[] {
       id: 'b6_curated_1',
       category: 'Business Automation',
       difficulty: 'medium',
-      question: '📄 THE 500-PAGE PDF GAUNTLET: A business user uploads a 500-page commercial loan prospectus and asks: "What is the guarantor clause on page 342?". What AI architecture answers accurately in 2 seconds?',
+      question: 'A business user uploads a 500-page commercial loan prospectus and asks: "What is the guarantor clause on page 342?". What AI architecture answers accurately in 2 seconds?',
       options: [
         'Hybrid Semantic RAG (Chunking + Vector Indexing + BM25 Lexical Re-ranking)',
         'Copy-pasting 500 pages into one prompt and praying it fits context',
@@ -480,7 +480,7 @@ function generateBooth6Questions(count: number = 30): QuizQuestion[] {
       id: 'b6_curated_2',
       category: 'Business Automation',
       difficulty: 'hard',
-      question: '🔍 SPOT THE HALLUCINATION: An AI automated marketing teammate drafts an email campaign stating: "Our savings account offers guaranteed 98% monthly returns risk-free!". Why does the compliance agent flag this?',
+      question: 'An AI automated marketing teammate drafts an email campaign stating: "Our savings account offers guaranteed 98% monthly returns risk-free!". Why does the compliance agent flag this?',
       options: [
         'Clear financial hallucination violating regulatory fair advertising guidelines (truth in savings)',
         'The font size was not Times New Roman',
@@ -493,7 +493,7 @@ function generateBooth6Questions(count: number = 30): QuizQuestion[] {
       id: 'b6_curated_3',
       category: 'Business Automation',
       difficulty: 'easy',
-      question: '☕ AUTOMATION COMEDY: A company automates 10,000 hours of manual spreadsheet data entry with an AI teammate. What do the analysts do with their newfound time?',
+      question: 'A company automates 10,000 hours of manual spreadsheet data entry with an AI teammate. What do the analysts do with their newfound time?',
       options: [
         'Focus on high-value strategic decision analysis, anomaly investigation, and advisory',
         'Create even bigger and more colorful spreadsheets with 15 nested VLOOKUPs',
@@ -517,7 +517,7 @@ function generateBooth6Questions(count: number = 30): QuizQuestion[] {
       id: `b6_proc_${i}`,
       category: 'Business Automation',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `📊 [BUSINESS PROCESS #${i + 1}] Automating "${proc}" processing ${dt} with target ${accuracy}% accuracy. What ensures reliable output?`,
+      question: `Automating "${proc}" processing ${dt} with target ${accuracy}% accuracy. What ensures reliable output?`,
       options: [
         'Multimodal Vision-Language extraction with confidence scoring and human review fallback',
         'Running standard OCR and ignoring all blurry pages',
@@ -540,7 +540,7 @@ function generateBooth7Questions(count: number = 30): QuizQuestion[] {
       id: 'b7_curated_1',
       category: 'Risk & Banking',
       difficulty: 'hard',
-      question: '🚨 ADVERSE-NEWS SENTINEL: An AI risk agent scans global news and flags: "Supplier Acme Corp CFO resigns amid accounting irregularities." How does the risk intelligence agent immediately react?',
+      question: 'An AI risk agent scans global news and flags: "Supplier Acme Corp CFO resigns amid accounting irregularities." How does the risk intelligence agent immediately react?',
       options: [
         'Calculates exposure score, alerts credit risk officers, and initiates automated vendor review',
         'Buys more stock in Acme Corp because drama is exciting',
@@ -553,7 +553,7 @@ function generateBooth7Questions(count: number = 30): QuizQuestion[] {
       id: 'b7_curated_2',
       category: 'Risk & Banking',
       difficulty: 'medium',
-      question: '🧩 PAYMENT INTELLIGENCE MAZE: A real-time cross-border wire of $500,000 is submitted. The destination account was created 10 minutes ago in an uncharacteristic jurisdiction. What triggers?',
+      question: 'A real-time cross-border wire of $500,000 is submitted. The destination account was created 10 minutes ago in an uncharacteristic jurisdiction. What triggers?',
       options: [
         'Anti-Money Laundering (AML) velocity & anomaly alert with immediate transaction freeze for review',
         'Speedy delivery bonus points for prompt transfer',
@@ -566,7 +566,7 @@ function generateBooth7Questions(count: number = 30): QuizQuestion[] {
       id: 'b7_curated_3',
       category: 'Risk & Banking',
       difficulty: 'easy',
-      question: '🤝 AI TEAMMATE ETIQUETTE: When an AI teammate collaborates with human credit underwriters on loan approvals, what is its golden rule?',
+      question: 'When an AI teammate collaborates with human credit underwriters on loan approvals, what is its golden rule?',
       options: [
         'Explainable AI (XAI): provide clear risk factor justifications, never act as an opaque black box',
         'Always agree with whatever the human says even if the math is wrong',
@@ -588,7 +588,7 @@ function generateBooth7Questions(count: number = 30): QuizQuestion[] {
       id: `b7_proc_${i}`,
       category: 'Risk & Banking',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `🏦 [RISK AGENT #${i + 1}] Sentinel agent evaluates $${amount.toLocaleString()} in "${rt}". What governs autonomous agent intervention?`,
+      question: `Sentinel agent evaluates $${amount.toLocaleString()} in "${rt}". What governs autonomous agent intervention?`,
       options: [
         'Risk-tolerance policy boundaries with cryptographic audit log recording',
         'Letting the agent flip a digital coin if the decision is tricky',
@@ -611,7 +611,7 @@ function generateBooth8Questions(count: number = 30): QuizQuestion[] {
       id: 'b8_curated_1',
       category: 'Enterprise Platforms & SRE',
       difficulty: 'medium',
-      question: '🚨 03:00 AM PAGER ALERT: A critical payments gateway CPU spikes to 100% and crashes every 4 minutes. What does an autonomous SRE self-healing agent do first?',
+      question: 'A critical payments gateway CPU spikes to 100% and crashes every 4 minutes. What does an autonomous SRE self-healing agent do first?',
       options: [
         'Redirect traffic to healthy replica, capture thread dump for diagnostics, and spin up clean container',
         'Wake up the entire company executive team with siren sound effects',
@@ -624,7 +624,7 @@ function generateBooth8Questions(count: number = 30): QuizQuestion[] {
       id: 'b8_curated_2',
       category: 'Enterprise Platforms & SRE',
       difficulty: 'hard',
-      question: '🧩 SERVICE DESK AUTOMATION: 5,000 employees submit the exact same ticket on Monday morning: "My password expired!". How does an intelligent enterprise digital worker resolve this?',
+      question: '5,000 employees submit the exact same ticket on Monday morning: "My password expired!". How does an intelligent enterprise digital worker resolve this?',
       options: [
         'Autonomous zero-touch verification flow via enterprise authenticator app in 15 seconds',
         'Printing all 5,000 tickets on paper and storing them in filing cabinets',
@@ -637,7 +637,7 @@ function generateBooth8Questions(count: number = 30): QuizQuestion[] {
       id: 'b8_curated_3',
       category: 'Enterprise Platforms & SRE',
       difficulty: 'medium',
-      question: '🐒 CHAOS ENGINEERING GAME: Chaos Monkey terminates 3 random pods in your production cluster during peak trading hours. Your system experiences zero downtime. What saved the day?',
+      question: 'Chaos Monkey terminates 3 random pods in your production cluster during peak trading hours. Your system experiences zero downtime. What saved the day?',
       options: [
         'High-availability multi-zone deployment with active health probes and declarative replica counts',
         'Pure luck and good karma from the infrastructure gods',
@@ -659,7 +659,7 @@ function generateBooth8Questions(count: number = 30): QuizQuestion[] {
       id: `b8_proc_${i}`,
       category: 'Enterprise Platforms & SRE',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `🏗️ [SRE AUTOMATION #${i + 1}] Alert: "${inc}". SRE agent aims for MTTR < ${mtr} seconds. Which remediation strategy applies?`,
+      question: `Alert: "${inc}". SRE agent aims for MTTR < ${mtr} seconds. Which remediation strategy applies?`,
       options: [
         'Automated runbook orchestration with declarative rollbacks and circuit breaker isolation',
         'Posting in a public forum asking for quick advice',
@@ -682,7 +682,7 @@ function generateBooth9Questions(count: number = 30): QuizQuestion[] {
       id: 'b9_curated_1',
       category: 'Modernization & Quality',
       difficulty: 'medium',
-      question: '🧪 FLAKY TEST WHACK-A-MOLE: A test fails 1 out of every 20 CI runs: "Expected 200 OK, got 408 Request Timeout". What is the true root cause?',
+      question: 'A test fails 1 out of every 20 CI runs: "Expected 200 OK, got 408 Request Timeout". What is the true root cause?',
       options: [
         'Non-deterministic timing/race condition (hardcoded sleep instead of dynamic wait assertions)',
         'The test runner hates Mondays',
@@ -695,7 +695,7 @@ function generateBooth9Questions(count: number = 30): QuizQuestion[] {
       id: 'b9_curated_2',
       category: 'Modernization & Quality',
       difficulty: 'hard',
-      question: '🧩 CI/CD PIPELINE PUZZLE: A continuous delivery pipeline deploys a microservice. At step 4: "Canary traffic 10% → Error rate spikes to 4.2% (threshold: 0.5%)". What automated action must occur immediately?',
+      question: 'A continuous delivery pipeline deploys a microservice. At step 4: "Canary traffic 10% → Error rate spikes to 4.2% (threshold: 0.5%)". What automated action must occur immediately?',
       options: [
         'Automated instant canary rollback to previous stable version & traffic reroute',
         'Increase canary traffic to 100% to test if error rate grows higher',
@@ -708,7 +708,7 @@ function generateBooth9Questions(count: number = 30): QuizQuestion[] {
       id: 'b9_curated_3',
       category: 'Modernization & Quality',
       difficulty: 'easy',
-      question: '🤖 QUALITY INTELLIGENCE: How does an AI-powered Quality IQ agent prioritize test execution across 50,000 regression tests for a small 3-line pull request?',
+      question: 'How does an AI-powered Quality IQ agent prioritize test execution across 50,000 regression tests for a small 3-line pull request?',
       options: [
         'Test Impact Analysis (TIA): executes only tests covering the impacted code paths and dependencies',
         'Runs all 50,000 tests alphabetically from A to Z for 14 hours',
@@ -730,7 +730,7 @@ function generateBooth9Questions(count: number = 30): QuizQuestion[] {
       id: `b9_proc_${i}`,
       category: 'Modernization & Quality',
       difficulty: i % 2 === 0 ? 'medium' : 'hard',
-      question: `🚀 [CI/CD ACCELERATION #${i + 1}] Modernization agent automates "${stage}". Target: ${coverage}% quality index score. What guarantees reliability?`,
+      question: `Modernization agent automates "${stage}". Target: ${coverage}% quality index score. What guarantees reliability?`,
       options: [
         'Deterministic test orchestration, synthetic test data generation, and automated regression verification',
         'Deleting failing tests until the build icon turns green',

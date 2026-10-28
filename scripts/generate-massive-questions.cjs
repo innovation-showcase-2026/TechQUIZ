@@ -46,7 +46,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'ZERO-TRUST ENCLAVE',
-        prompt: (sys, num) => `🕵️ SPOT THE IMPOSTER: Service "${sys}" is establishing an inter-zone connection with ${num} microservices. 3 are authentic Zero Trust controls. Which one is an undercover security hazard?`,
+        prompt: (sys, num) => `Service "${sys}" is establishing an inter-zone connection with ${num} microservices. 3 are authentic Zero Trust controls. Which one is an undercover security hazard?`,
         correct: 'Relying exclusively on the internal network perimeter firewall and assuming all internal LAN traffic is friendly ☕',
         plausible: [
           'Enforcing mutual TLS (mTLS) with cryptographically verifiable SPIFFE x509 SVIDs',
@@ -56,7 +56,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'DATA LINEAGE PUZZLE',
-        prompt: (sys, num) => `🧩 GRAPH TRAVERSAL: An automated GDPR "Right to be Forgotten" erasure request arrives for User #${num * 317}. Pipeline flow is: Raw SFTP Ingestion ➡️ ${sys} ➡️ Feature Store ➡️ Inference Model. Where must the deletion and lineage audit propagate?`,
+        prompt: (sys, num) => `An automated GDPR "Right to be Forgotten" erasure request arrives for User #${num * 317}. Pipeline flow is: Raw SFTP Ingestion ➡️ ${sys} ➡️ Feature Store ➡️ Inference Model. Where must the deletion and lineage audit propagate?`,
         correct: 'End-to-end across all upstream staging buckets, the feature store, cache layers, and downstream training metadata',
         plausible: [
           'Only in the final inference model output database table',
@@ -66,7 +66,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'INCIDENT LOG SLEUTH',
-        prompt: (sys, num) => `🚨 SECURITY SLEUTH: Review this captured log line on ${sys}:\n\`POST /api/v1/auth/token - payload: {"user": "admin\' OR \'${num}\'=\'${num}", "hash": "--"}\`\nWhat attack was blocked by the input sanitizer?`,
+        prompt: (sys, num) => `Review this captured log line on ${sys}:\n\`POST /api/v1/auth/token - payload: {"user": "admin\' OR \'${num}\'=\'${num}", "hash": "--"}\`\nWhat attack was blocked by the input sanitizer?`,
         correct: 'SQL Injection targeting backend relational authentication queries',
         plausible: [
           'Cross-Site Request Forgery (CSRF)',
@@ -76,7 +76,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'KEY ROTATION MATH',
-        prompt: (sys, num) => `🔢 ROTATION TIMING: KMS key on ${sys} rotates every ${num} days. Envelope encryption uses a Data Encryption Key (DEK) cached for at most 60 minutes. If the Key Encryption Key (KEK) is compromised, what is the blast radius?`,
+        prompt: (sys, num) => `The KMS key on ${sys} rotates every ${num} days. Envelope encryption uses a Data Encryption Key (DEK) cached for at most 60 minutes. If the Key Encryption Key (KEK) is compromised, what is the blast radius?`,
         correct: 'All historical ciphertexts encrypted under that specific KEK version must be re-wrapped immediately',
         plausible: [
           'Zero blast radius because KMS keys are immune to human error',
@@ -86,7 +86,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'VULNERABILITY SCANNER',
-        prompt: (sys, num) => `🛡️ CONTAINER AUDIT: Static vulnerability scanner flags CVE-2026-${num * 11} (CVSS score: 9.8) in base image for ${sys}. What is the mandatory DevSecOps remediation gate?`,
+        prompt: (sys, num) => `A static vulnerability scanner flags CVE-2026-${num * 11} (CVSS score: 9.8) in base image for ${sys}. What is the mandatory DevSecOps remediation gate?`,
         correct: 'Block pipeline promotion, rebuild from patched minimal base image, and verify with SBOM artifact signing',
         plausible: [
           'Downgrade the CVSS score to 2.1 in the scanner configuration to allow deployment',
@@ -107,7 +107,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'AGENT RUNAWAY LOOP',
-        prompt: (sys, num) => `🤖 ESCAPE THE LOOP: Agent "${sys}" is collaborating with Agent-Beta to reconcile $${num * 250}. Agent Alpha says "Please confirm". Beta says "Please re-confirm". This ping-pong loop has repeated ${num + 20} times. How is it prevented?`,
+        prompt: (sys, num) => `Agent "${sys}" is collaborating with Agent-Beta to reconcile $${num * 250}. Agent Alpha says "Please confirm". Beta says "Please re-confirm". This ping-pong loop has repeated ${num + 20} times. How is it prevented?`,
         correct: 'Orchestrator recursion depth ceiling, cycle detection hash, and human-in-the-loop intervention gates',
         plausible: [
           'Letting the agents chat indefinitely until they run out of electrical power',
@@ -117,7 +117,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'TOKEN MATH PUZZLE',
-        prompt: (sys, num) => `🧩 TOKEN BUDGET PUZZLE: ${sys} has a context window of ${num * 1024} tokens. System instructions occupy 512 tokens. Each tool execution adds 256 tokens of input and 128 tokens of output. After 8 tool steps, how much context headroom remains?`,
+        prompt: (sys, num) => `${sys} has a context window of ${num * 1024} tokens. System instructions occupy 512 tokens. Each tool execution adds 256 tokens of input and 128 tokens of output. After 8 tool steps, how much context headroom remains?`,
         correct: (sys, num) => `${num * 1024 - 512 - (8 * 384)} tokens available for reasoning and user response`,
         plausible: [
           '0 tokens (the model hallucinates that it is out of memory)',
@@ -127,7 +127,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'MCP TOOL SAFETY',
-        prompt: (sys, num) => `🔌 PROTOCOL GUARANTEE: In the Model Context Protocol (MCP), what cryptographic or authorization mechanism prevents ${sys} from invoking unauthorized external shell commands?`,
+        prompt: (sys, num) => `In the Model Context Protocol (MCP), what cryptographic or authorization mechanism prevents ${sys} from invoking unauthorized external shell commands?`,
         correct: 'Strict JSON-RPC schema contracts, capability negotiation, and scoped permission manifests per tool server',
         plausible: [
           'Hoping the AI agent reads the terms and conditions and respects them',
@@ -137,7 +137,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'DIGITAL IDENTITY ZKP',
-        prompt: (sys, num) => `🆔 ZERO-KNOWLEDGE PROOF: Customer #${num * 88} presents a W3C Verifiable Credential to prove they are over 21 without revealing their exact birth date or home address. How does the DID verifier authenticate this?`,
+        prompt: (sys, num) => `Customer #${num * 88} presents a W3C Verifiable Credential to prove they are over 21 without revealing their exact birth date or home address. How does the DID verifier authenticate this?`,
         correct: 'Validates cryptographic ZKP predicate and checks issuer digital signature against decentralized registry',
         plausible: [
           'Asks the customer to take a selfie holding today\'s physical newspaper',
@@ -147,7 +147,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'MULTI-AGENT DEBATE',
-        prompt: (sys, num) => `🧠 CONSENSUS DECISION: A multi-agent committee (Risk Agent, Fraud Agent, Approval Agent) evaluates transaction #${num * 999}. 2 agents approve and 1 agent flags severe anomaly. What is the correct orchestrator behavior?`,
+        prompt: (sys, num) => `A multi-agent committee (Risk Agent, Fraud Agent, Approval Agent) evaluates transaction #${num * 999}. 2 agents approve and 1 agent flags severe anomaly. What is the correct orchestrator behavior?`,
         correct: 'Route to asynchronous human exception review queue under strict governance SLA',
         plausible: [
           'Mute the dissenting agent because majority always rules without question',
@@ -168,7 +168,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'PROMPT-TO-PROD AUDIT',
-        prompt: (sys, num) => `🚀 PIPELINE GATE: An AI assistant writes a ${num * 15}-line microservice endpoint with direct SQL execution. What automated check MUST run before permitting pull request merge?`,
+        prompt: (sys, num) => `An AI assistant writes a ${num * 15}-line microservice endpoint with direct SQL execution. What automated check MUST run before permitting pull request merge?`,
         correct: 'Automated SAST scanning for parameterized queries, container vulnerability checks, and mutation test verification',
         plausible: [
           'Committing straight to main branch on Friday at 4:59 PM with message "it compiled fine on my laptop" 🏃‍♂️',
@@ -178,7 +178,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'PHANTOM COVERAGE DETECTIVE',
-        prompt: (sys, num) => `🧪 TEST SUITE TRICK: Pipeline on ${sys} reports: "Lines of code: ${num * 1000} | Statement Coverage: 97% | Mutation Score: 4%". What critical flaw exists in this test suite?`,
+        prompt: (sys, num) => `The CI pipeline on ${sys} reports: "Lines of code: ${num * 1000} | Statement Coverage: 97% | Mutation Score: 4%". What critical flaw exists in this test suite?`,
         correct: 'Tests are executing code paths without assertions (Phantom Coverage), failing to catch real logic mutations',
         plausible: [
           'The code is so high-quality that mutants refuse to live in it',
@@ -188,7 +188,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'CONCURRENCY SLEUTH',
-        prompt: (sys, num) => `🚨 CODE SLEUTH: Review this generated TypeScript snippet:\n\`let balance = ${num * 50};\nasync function deduct() { balance = balance - 10; }\`\nWhat bug will occur under ${num * 20} concurrent requests?`,
+        prompt: (sys, num) => `Review this generated TypeScript snippet:\n\`let balance = ${num * 50};\nasync function deduct() { balance = balance - 10; }\`\nWhat bug will occur under ${num * 20} concurrent requests?`,
         correct: 'Race condition due to non-atomic read-modify-write without mutex or transactional isolation',
         plausible: [
           'Syntax error because variables cannot contain numbers',
@@ -198,7 +198,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'MODERNIZATION ACCELERATOR',
-        prompt: (sys, num) => `⚡ REFACTORING BATTLE: ${sys} is translating ${num * 2500} lines of legacy procedural COBOL/Java into modern cloud services. What ensures semantic equivalence?`,
+        prompt: (sys, num) => `${sys} is translating ${num * 2500} lines of legacy procedural COBOL/Java into modern cloud services. What ensures semantic equivalence?`,
         correct: 'Differential fuzz testing and behavioral parity assertion suites executed against legacy output baselines',
         plausible: [
           'Eyeballing the code and asking if everyone feels good about it',
@@ -219,7 +219,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'STRANGLER FIG STRATEGY',
-        prompt: (sys, num) => `🏗️ ARCHITECTURE CHOICE: Decomposing a 20-year-old core processing monolith servicing ${num * 50000} daily transactions. How does ${sys} prevent distributed catastrophic downtime?`,
+        prompt: (sys, num) => `When decomposing a 20-year-old core processing monolith servicing ${num * 50000} daily transactions, how does ${sys} prevent distributed catastrophic downtime?`,
         correct: 'Strangler Fig facade intercepting and routing incremental domain slices to microservices behind a circuit breaker',
         plausible: [
           'The "Big Bang" shutdown: turn off the legacy mainframe over the weekend and hope for the best 💥',
@@ -229,7 +229,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'ELT VS ETL TIMING',
-        prompt: (sys, num) => `🧩 DATA FLOW PUZZLE: Why do modern Lakehouses on ${sys} prioritize Extract-Load-Transform (ELT) over traditional Extract-Transform-Load (ETL) when processing ${num * 10} TBs?`,
+        prompt: (sys, num) => `Why do modern Lakehouses on ${sys} prioritize Extract-Load-Transform (ELT) over traditional Extract-Transform-Load (ETL) when processing ${num * 10} TBs?`,
         correct: 'Raw data is immutably landed first in elastic cloud object storage, leveraging distributed compute for decoupled on-demand transformations',
         plausible: [
           'Because the letter L looks better between E and T in architecture diagrams',
@@ -239,7 +239,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'AUTOSCALING DISASTER',
-        prompt: (sys, num) => `🚨 CLOUD BILL CRIME: A Kubernetes cluster autoscaler on ${sys} spawned ${num * 50} compute nodes over Saturday night due to an unhandled retry storm. What safeguard stops this?`,
+        prompt: (sys, num) => `A Kubernetes cluster autoscaler on ${sys} spawned ${num * 50} compute nodes over Saturday night due to an unhandled retry storm. What safeguard stops this?`,
         correct: 'Strict cluster resource limits, maxNode boundaries, pod disruption budgets, and budget anomaly alerts',
         plausible: [
           'Call the cloud provider and claim the servers were launched by aliens',
@@ -249,7 +249,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'IDEMPOTENCY GUARANTEE',
-        prompt: (sys, num) => `⚡ STREAMING DUPLICATE: Network glitch causes Kafka producer on ${sys} to retry sending payment batch #${num * 1234} three times. What ensures customers are charged exactly once?`,
+        prompt: (sys, num) => `A network glitch causes a Kafka producer on ${sys} to retry sending payment batch #${num * 1234} three times. What ensures customers are charged exactly once?`,
         correct: 'Idempotent consumer processing with unique deduplication keys and transactional database writes',
         plausible: [
           'Trusting the network never drops packets on weekdays',
@@ -270,7 +270,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'SMART MODEL ROUTING',
-        prompt: (sys, num) => `🧠 ROUTING PARADOX: Incoming query asks: "Calculate ${num * 13} * 7.5". Your platform has a 405B Frontier LLM ($$$) and an embedded deterministic math evaluator (<1ms, $0). Where does ${sys} route?`,
+        prompt: (sys, num) => `An incoming query asks: "Calculate ${num * 13} * 7.5". Your platform has a 405B Frontier LLM ($$$) and an embedded deterministic math evaluator (<1ms, $0). Where does ${sys} route?`,
         correct: 'Routes to the deterministic math engine, saving 99.9% cost and delivering sub-millisecond response time',
         plausible: [
           'Routes to the 405B model because bigger models do multiplication with more emotional depth 🎭',
@@ -280,7 +280,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'CONCEPT DRIFT DETECTIVE',
-        prompt: (sys, num) => `🧩 DRIFT DETECTIVE: A credit risk model deployed on ${sys} showed 94% accuracy in 2024. In 2026, without code changes, accuracy drops to ${num + 55}%. What occurred?`,
+        prompt: (sys, num) => `A credit risk model deployed on ${sys} showed 94% accuracy in 2024. In 2026, without code changes, accuracy drops to ${num + 55}%. What occurred?`,
         correct: 'Data & Concept Drift: macroeconomic factors and consumer behavior shifted, causing training distributions to mismatch live reality',
         plausible: [
           'The AI model weights got tired from calculating too many numbers',
@@ -290,7 +290,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'FINOPS SURPRISE',
-        prompt: (sys, num) => `💰 TOKEN BUDGET ALARM: A rogue loop in an integration script consumed ${num * 100000} tokens in 30 minutes, burning thousands of dollars. What enterprise platform control stops this?`,
+        prompt: (sys, num) => `A rogue loop in an integration script consumed ${num * 100000} tokens in 30 minutes, burning thousands of dollars. What enterprise platform control stops this?`,
         correct: 'Multi-tenant rate limiters, token quota caps, cost anomaly tripwires, and automated request throttling',
         plausible: [
           'Ask the AI provider for a refund because the prompt was typed accidentally',
@@ -300,7 +300,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'SPECULATIVE DECODING',
-        prompt: (sys, num) => `⚡ INFERENCE ACCELERATOR: How does speculative decoding in ${sys} speed up large 70B parameter LLM inference by ${num * 2}% without degrading output quality?`,
+        prompt: (sys, num) => `How does speculative decoding in ${sys} speed up large 70B parameter LLM inference by ${num * 2}% without degrading output quality?`,
         correct: 'A small draft model speculatively generates token candidates which are verified in parallel by the target model in a single forward pass',
         plausible: [
           'It skips every second word in the output sentences to save time',
@@ -321,7 +321,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'PDF EXTRACTION CHALLENGE',
-        prompt: (sys, num) => `📄 500-PAGE GAUNTLET: A commercial loan prospectus is ${num * 100} pages long. User queries: "What is the liability cap in section ${num % 20 + 1}?". What architecture guarantees a correct, non-hallucinated response?`,
+        prompt: (sys, num) => `A commercial loan prospectus is ${num * 100} pages long. When a user asks: "What is the liability cap in section ${num % 20 + 1}?", what architecture guarantees a correct, non-hallucinated response?`,
         correct: 'Hybrid RAG combining semantic chunking, dense vector embeddings, BM25 keyword matching, and cross-encoder re-ranking',
         plausible: [
           'Stuffing all 500 pages into a prompt and hoping the context window doesn\'t choke',
@@ -331,7 +331,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'SPOT THE HALLUCINATION',
-        prompt: (sys, num) => `🔍 COMPLIANCE AUDIT: An automated marketing assistant on ${sys} drafts: "Guaranteed ${num * 12}% monthly returns risk-free on standard checking accounts!". Why is this immediately flagged?`,
+        prompt: (sys, num) => `An automated marketing assistant on ${sys} drafts: "Guaranteed ${num * 12}% monthly returns risk-free on standard checking accounts!". Why is this immediately flagged?`,
         correct: 'Severe financial hallucination violating consumer protection and truth-in-savings legal requirements',
         plausible: [
           'The email draft did not use Times New Roman font',
@@ -341,7 +341,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'FRAUD DETECTION GRAPH',
-        prompt: (sys, num) => `🧩 GRAPH SLEUTH: A suspicious buyer account on ${sys} conducts ${num * 5} small purchases across 10 cards within 45 seconds. How does the fraud analytics agent detect this ring?`,
+        prompt: (sys, num) => `A suspicious buyer account on ${sys} conducts ${num * 5} small purchases across 10 cards within 45 seconds. How does the fraud analytics agent detect this ring?`,
         correct: 'Real-time graph intelligence linking device fingerprints, shared IP subnets, velocity thresholds, and entity resolution',
         plausible: [
           'Sends a postcard to each cardholder asking if they are shopping right now',
@@ -351,7 +351,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'AUTOMATION ROI REALITY',
-        prompt: (sys, num) => `☕ ANALYST REALITY: ${sys} automates ${num * 500} hours of manual spreadsheet data reconciliation per month. What is the highest-value reallocation of analyst capacity?`,
+        prompt: (sys, num) => `${sys} automates ${num * 500} hours of manual spreadsheet data reconciliation per month. What is the highest-value reallocation of analyst capacity?`,
         correct: 'Investigating complex anomalies, root-cause exceptions, and strategic business advisory workflows',
         plausible: [
           'Creating even larger spreadsheets with 45 nested VLOOKUP formulas that crash Excel',
@@ -372,7 +372,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: 'ADVERSE NEWS SENTINEL',
-        prompt: (sys, num) => `🚨 BREAKING NEWS ALERT: An adverse news NLP agent on ${sys} detects: "Supplier Apex Corp CFO abruptly resigns amidst audit investigation". Exposure is $${num * 500000}. What immediate action executes?`,
+        prompt: (sys, num) => `An adverse news NLP agent on ${sys} detects: "Supplier Apex Corp CFO abruptly resigns amidst audit investigation". Exposure is $${num * 500000}. What immediate action executes?`,
         correct: 'Recalculates counterparty risk score, freezes uncommitted credit lines, and dispatches automated alert to credit officers',
         plausible: [
           'Buys more stock in Apex Corp because corporate drama is entertaining',
@@ -382,7 +382,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'WIRE ANOMALY CHALLENGE',
-        prompt: (sys, num) => `🧩 PAYMENT ANOMALY: A wire transfer of $${num * 25000} is initiated at 03:22 AM from a new browser fingerprint in a high-risk jurisdiction. How does ${sys} respond?`,
+        prompt: (sys, num) => `A wire transfer of $${num * 25000} is initiated at 03:22 AM from a new browser fingerprint in a high-risk jurisdiction. How does ${sys} respond?`,
         correct: 'Automated transaction hold, step-up multi-factor biometric authentication challenge, and risk queue escalation',
         plausible: [
           'Approves instantly because sending money at 3:00 AM shows remarkable dedication',
@@ -392,7 +392,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'EXPLAINABLE AI MANDATE',
-        prompt: (sys, num) => `🤝 XAI MANDATE: An automated underwriting assistant on ${sys} recommends denying mortgage application #${num * 777}. Under fair lending regulations, what must the model provide?`,
+        prompt: (sys, num) => `An automated underwriting assistant on ${sys} recommends denying mortgage application #${num * 777}. Under fair lending regulations, what must the model provide?`,
         correct: 'Clear adverse action notices detailing principal key reason codes (e.g. debt-to-income ratio, credit history depth)',
         plausible: [
           'A cryptic message saying "The machine learning algorithm has spoken, do not question it"',
@@ -402,7 +402,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'STRESS TEST MONTE CARLO',
-        prompt: (sys, num) => `📈 CAPITAL STRESS TEST: ${sys} simulates a ${num * 50} basis point interest rate shock across ${num * 10000} commercial portfolios. What metric determines balance sheet resilience?`,
+        prompt: (sys, num) => `${sys} simulates a ${num * 50} basis point interest rate shock across ${num * 10000} commercial portfolios. What metric determines balance sheet resilience?`,
         correct: 'Common Equity Tier 1 (CET1) capital adequacy ratio and Liquidity Coverage Ratio (LCR) under stressed cash flow outflows',
         plausible: [
           'The total number of paper checks sitting in the bank vault',
@@ -423,7 +423,7 @@ const BOOTH_SPECS = [
     scenarios: [
       {
         tag: '03:00 AM ON-CALL OUTAGE',
-        prompt: (sys, num) => `🚨 03:00 AM CRITICAL: High-throughput API gateway on ${sys} experiences CPU saturation (99.8%) and thread lock every ${num % 10 + 2} minutes. How does the autonomous SRE agent remediate in <30 seconds?`,
+        prompt: (sys, num) => `A high-throughput API gateway on ${sys} experiences CPU saturation (99.8%) and thread lock every ${num % 10 + 2} minutes. How does the autonomous SRE agent remediate in <30 seconds?`,
         correct: 'Reroutes traffic to healthy warm standby cluster, captures thread/heap dump for diagnostics, and triggers canary pod rolling restarts',
         plausible: [
           'Sends an automated pager alert to all 5,000 employees in the corporate directory',
@@ -433,7 +433,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'SERVICE DESK RESET TSUNAMI',
-        prompt: (sys, num) => `🧩 MONDAY MORNING TSUNAMI: Following an enterprise security policy update, ${num * 250} employees submit password lock tickets simultaneously on ${sys}. How does the digital worker handle this?`,
+        prompt: (sys, num) => `Following an enterprise security policy update, ${num * 250} employees submit password lock tickets simultaneously on ${sys}. How does the digital worker handle this?`,
         correct: 'Zero-touch automated identity verification via enterprise authenticator push token and self-service credential issuance in <15s',
         plausible: [
           'Prints all tickets and assigns them to the IT intern as a character-building exercise',
@@ -443,7 +443,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'CHAOS EXPERIMENT SURVIVAL',
-        prompt: (sys, num) => `🐒 CHAOS INJECTION: A chaos experiment terminates ${num % 4 + 2} primary database replicas in zone us-east-1 during peak market hours. Why does ${sys} achieve zero customer transaction loss?`,
+        prompt: (sys, num) => `A chaos experiment terminates ${num % 4 + 2} primary database replicas in zone us-east-1 during peak market hours. Why does ${sys} achieve zero customer transaction loss?`,
         correct: 'Multi-AZ synchronous replication with automated Raft consensus leader election and transparent connection pool failover',
         plausible: [
           'The database was not actually doing any real work during market hours',
@@ -453,7 +453,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'OBSERVABILITY CORRELATION',
-        prompt: (sys, num) => `🔍 TELEMETRY CORRELATION: Microservice on ${sys} experiences a latency spike from 45ms to ${num * 150}ms. Which telemetry triangulation identifies the root cause fastest?`,
+        prompt: (sys, num) => `A microservice on ${sys} experiences a latency spike from 45ms to ${num * 150}ms. Which telemetry triangulation identifies the root cause fastest?`,
         correct: 'Distributed trace spans correlated with backend database query lock duration and container cgroup CPU throttling metrics',
         plausible: [
           'Reading every single syslog message from top to bottom on the terminal',
@@ -468,13 +468,13 @@ const BOOTH_SPECS = [
   {
     num: 9,
     id: 'booth-9',
-    category: 'Modernization & Quality',
+    category: 'CI/CD & Quality',
     title: 'AI-Accelerated Engineering, Automation & Quality',
     systems: ['CI-Accelerator', 'Test-Impact-IQ', 'Canary-Watcher', 'Contract-Pact-Node', 'Modernize-Pipe', 'Code-Doctor-AI'],
     scenarios: [
       {
         tag: 'FLAKY TEST DETECTIVE',
-        prompt: (sys, num) => `🧪 FLAKY TEST SLEUTH: A test in ${sys} fails 1 out of every ${num % 20 + 10} CI runs with "AssertionError: Expected 200 OK, got 408 Request Timeout". What is the true root cause?`,
+        prompt: (sys, num) => `A test in ${sys} fails 1 out of every ${num % 20 + 10} CI runs with "AssertionError: Expected 200 OK, got 408 Request Timeout". What is the true root cause?`,
         correct: 'Non-deterministic race condition or hardcoded timing sleep instead of dynamic condition-polling assertions',
         plausible: [
           'The test runner holds a grudge against the author of the pull request',
@@ -484,7 +484,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'CANARY ROLLBACK REFLEX',
-        prompt: (sys, num) => `🚨 CANARY WARNING: Deploying service v${num % 5 + 2}.0 on ${sys}. At 10% canary traffic, error rate climbs to ${num % 3 + 4}.1% (SLA threshold: 0.5%). What automated pipeline action executes?`,
+        prompt: (sys, num) => `Deploying service v${num % 5 + 2}.0 on ${sys}. At 10% canary traffic, error rate climbs to ${num % 3 + 4}.1% (SLA threshold: 0.5%). What automated pipeline action executes?`,
         correct: 'Instant automated canary abort, traffic rollback to previous stable deployment, and notification dispatch with error trace',
         plausible: [
           'Increase canary traffic to 100% to see if errors fix themselves at higher volume 📈',
@@ -494,7 +494,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'TEST IMPACT ACCELERATION',
-        prompt: (sys, num) => `⚡ TEST IMPACT ANALYSIS: A pull request touches only 4 lines of code in ${sys}. The full regression suite has ${num * 1000} tests taking 6 hours. How does AI Quality IQ optimize this?`,
+        prompt: (sys, num) => `A pull request touches only 4 lines of code in ${sys}. The full regression suite has ${num * 1000} tests taking 6 hours. How does AI Quality IQ optimize this?`,
         correct: 'Executes only the precise subset of unit and integration tests mapped to the modified AST code paths and dependencies in <2 minutes',
         plausible: [
           'Runs all tests alphabetically and stops when the developer gets tired of waiting',
@@ -504,7 +504,7 @@ const BOOTH_SPECS = [
       },
       {
         tag: 'CONTRACT TESTING DEFENSE',
-        prompt: (sys, num) => `🤝 API CONTRACT GATE: Upstream service changes field \`accountId\` from integer to UUID string without notifying downstream on ${sys}. What CI gate catches this before production?`,
+        prompt: (sys, num) => `An upstream service changes field \`accountId\` from integer to UUID string without notifying downstream on ${sys}. What CI gate catches this before production?`,
         correct: 'Consumer-Driven Contract Testing (Pact) failing the PR verification build due to breaking schema mismatch',
         plausible: [
           'Waiting until customers complain on social media after the deployment',
@@ -547,7 +547,7 @@ function generateBoothBank(spec, targetCount = 5000) {
       id: `${spec.id}_q_${i + 1}`,
       category: spec.category,
       difficulty,
-      question: `[#${i + 1} • ${scen.tag}] ${promptText}`,
+      question: promptText,
       options: shuffledOptions,
       correctAnswer: correctAnswerIndex
     });
