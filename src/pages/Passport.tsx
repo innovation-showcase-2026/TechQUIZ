@@ -107,8 +107,7 @@ export function Passport({
             <div className="ts-passport-meta-row">
               <p className="ts-passport-meta">
                 <span>👤 <strong>{participant.name}</strong></span>
-                <span> • 🆔 EntID: <strong>{participant.entId}</strong></span>
-                {participant.lob && <span> • 🏢 LOB: <strong>{participant.lob}</strong></span>}
+                <span> • ✉️ <strong>{participant.email || participant.entId}</strong></span>
               </p>
               {onEditProfile && (
                 <button

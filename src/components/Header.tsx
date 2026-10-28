@@ -24,7 +24,6 @@ export function Header({
         >
           <span className="ts-header__accent" aria-hidden="true" />
           <div className="ts-header__copy">
-            <span className="ts-header__company">WELLSFARGO</span>
             <span className="ts-header__title">
               Innovation Showcase <strong>- 2026</strong>
             </span>
@@ -33,7 +32,7 @@ export function Header({
 
         <div className="ts-header__right">
           <span className="ts-header__tagline">
-            INNOVATE <i aria-hidden="true" /> ADOPT <i aria-hidden="true" /> REUSE
+            INNOVATE <span className="ts-red-arrow" aria-hidden="true">››</span> ADOPT <span className="ts-red-arrow" aria-hidden="true">››</span> REUSE
           </span>
 
           {onOpenPassport && (

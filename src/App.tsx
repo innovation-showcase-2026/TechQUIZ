@@ -30,6 +30,7 @@ import {
 } from './utils/storage';
 import { fetchParticipantFromFirestore } from './services/firebaseService';
 import { getBoothById, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
+import { getRichQuestionsForBooth } from './utils/questionEngine';
 
 const QUESTION_COUNT = 5;
 
@@ -103,7 +104,7 @@ export default function App() {
                 setCurrentBoothResult(res.boothResults[matchedBooth.id]);
                 setStage('ALREADY_PLAYED');
               } else {
-                setStage('TOPIC_SELECTION');
+                startBoothQuiz(matchedBooth);
               }
             } else {
               setStage('PARTICIPANT');
@@ -116,8 +117,8 @@ export default function App() {
         return;
       }
 
-      // User registered and booth not yet played: show topic selection!
-      setStage('TOPIC_SELECTION');
+      // User registered and booth not yet played: start quiz directly!
+      startBoothQuiz(matchedBooth);
       return;
     }
 
@@ -175,7 +176,8 @@ export default function App() {
     }
 
     try {
-      const pool = topic?.questions && topic.questions.length > 0 ? topic.questions : booth.questions;
+      const dynamicPool = getRichQuestionsForBooth(booth.id, 50);
+      const pool = dynamicPool.length > 0 ? dynamicPool : (topic?.questions && topic.questions.length > 0 ? topic.questions : booth.questions);
       const count = Math.min(QUESTION_COUNT, pool.length);
       const prepared = prepareQuestions(pool, count);
       const newQuiz: QuizState = {
@@ -183,7 +185,7 @@ export default function App() {
         boothNumber: booth.number,
         boothTitle: booth.title,
         topicId: topic?.id,
-        topicTitle: topic?.title,
+        topicTitle: topic?.title || booth.title,
         questions: prepared,
         answers: new Array(prepared.length).fill(null),
         currentIndex: 0,
@@ -243,9 +245,9 @@ export default function App() {
         return;
       }
 
-      // If there's a target booth (from QR scan) and it's not played yet, go straight to quiz
+      // If there's a target booth (from QR scan) and it's not played yet, go straight to quiz!
       if (targetBooth) {
-        setStage('TOPIC_SELECTION');
+        startBoothQuiz(targetBooth);
         return;
       }
 
@@ -400,9 +402,9 @@ export default function App() {
       return;
     }
 
-    // Direct user to topic selection screen to choose active 20-minute topic!
-    setStage('TOPIC_SELECTION');
-  }, [participant]);
+    // Immediately start the booth quiz!
+    startBoothQuiz(booth);
+  }, [participant, startBoothQuiz]);
 
   const handleOpenScannedUrl = useCallback((url: string) => {
     window.location.href = url;
@@ -425,14 +427,16 @@ export default function App() {
 
   return (
     <>
-      <Header
-        completedCount={completedCount}
-        isWinner={isWinner}
-        onOpenPassport={participant ? handleOpenPassport : undefined}
-        isPassportActive={stage === 'PASSPORT'}
-        onGoHome={() => setStage('WELCOME')}
-      />
-      <Layout>
+      {(stage !== 'WELCOME' || loadError) && (
+        <Header
+          completedCount={completedCount}
+          isWinner={isWinner}
+          onOpenPassport={participant ? handleOpenPassport : undefined}
+          isPassportActive={stage === 'PASSPORT'}
+          onGoHome={() => setStage('WELCOME')}
+        />
+      )}
+      <Layout wide={stage === 'WELCOME' && !loadError}>
         {loadError && (
           <div className="ts-page">
             <div className="ts-page__container">

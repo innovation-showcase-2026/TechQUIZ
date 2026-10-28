@@ -20,15 +20,15 @@ if (!fs.existsSync(ROOT_QR_DIR)) {
 }
 
 const BOOTHS = [
-  { number: 1, title: 'Generative AI & LLMs' },
-  { number: 2, title: 'Cloud Native & Kubernetes' },
-  { number: 3, title: 'Cybersecurity & Zero Trust' },
-  { number: 4, title: 'Data Engineering & Lakehouse' },
-  { number: 5, title: 'DevOps, SRE & CI/CD' },
-  { number: 6, title: 'Software Architecture & APIs' },
-  { number: 7, title: 'IoT & Edge Computing' },
-  { number: 8, title: 'Web3 & Distributed Ledgers' },
-  { number: 9, title: 'Quantum & Emerging Horizons' },
+  { number: 1, title: 'Data Governance, Lineage & Zero Trust' },
+  { number: 2, title: 'Autonomous Agents, Digital Identity & Next-Gen Banking' },
+  { number: 3, title: 'AI-Powered Software Engineering & Developer Productivity' },
+  { number: 4, title: 'Cloud Modernization & Data Platforms' },
+  { number: 5, title: 'Enterprise AI Platform & Intelligent AI Operations' },
+  { number: 6, title: 'AI Business Intelligence & Process Automation' },
+  { number: 7, title: 'Agentic Banking, Risk Intelligence & AI Teammates' },
+  { number: 8, title: 'Intelligent Enterprise Platforms & SRE Operations' },
+  { number: 9, title: 'AI-Accelerated Engineering, Automation & Quality' },
 ];
 
 async function generateAll() {

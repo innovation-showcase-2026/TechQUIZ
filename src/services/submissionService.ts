@@ -43,7 +43,7 @@ export async function registerParticipant(participant: Participant): Promise<{ s
   try {
     const res = await registerParticipantInFirestore(participant);
     if (res.success) {
-      console.log(`[Registration] ✓ Registered participant ${participant.entId} in Firebase Firestore.`);
+      console.log(`[Registration] ✓ Registered participant ${participant.email} in Firebase Firestore.`);
     } else {
       console.warn(`[Registration] Firebase Firestore returned error:`, res.error);
     }
@@ -64,7 +64,7 @@ async function syncSubmission(
   try {
     const res = await saveBoothResultInFirestore(submission.participant, submission, allBoothResults);
     if (res.success) {
-      console.log(`[Submission] ✓ Saved booth ${submission.booth?.boothNumber} result in Firebase for ${submission.participant.entId}`);
+      console.log(`[Submission] ✓ Saved booth ${submission.booth?.boothNumber} result in Firebase for ${submission.participant.email}`);
       return true;
     }
     console.warn('[Submission] Failed to save result in Firebase:', res.error);

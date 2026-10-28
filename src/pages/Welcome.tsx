@@ -26,6 +26,7 @@ export function Welcome({
 }: WelcomeProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const isWinner = completedCount >= REQUIRED_BOOTHS_TO_WIN;
+  const bannerUrl = `${import.meta.env.BASE_URL}summit-banner.png`;
 
   const handleBoothClick = (booth: BoothConfig) => {
     if (participant && onSelectBooth) {
@@ -37,92 +38,75 @@ export function Welcome({
 
   return (
     <div className="ts-page ts-page--welcome">
-      {/* 1. Executive Keynote Hero Banner */}
-      <div className="ts-hero-card" role="region" aria-label="Innovation Showcase 2026 Keynote">
+      <section className="ts-hero-card" role="region" aria-label="Innovation Showcase 2026">
         <div className="ts-hero-card__glow-mesh" aria-hidden="true" />
 
-        <div className="ts-hero-header">
-          <div className="ts-hero-brand-row">
-            <span className="ts-hero-company">WELLSFARGO</span>
-            <span className="ts-hero-theme-badge">INNOVATE • ADOPT • REUSE</span>
-          </div>
-
-          <h1 className="ts-hero-title">
-            Innovation Showcase <span className="ts-hero-title-accent">2026</span>
-          </h1>
-
-          <div className="ts-hero-location-pill">
-            <span className="ts-hero-loc-dot" aria-hidden="true" />
-            <span>Bengaluru &nbsp;|&nbsp; Hyderabad &nbsp;|&nbsp; Virtual</span>
-          </div>
+        <div className="ts-banner-frame">
+          <img
+            src={bannerUrl}
+            alt="Wells Fargo Innovation Showcase 2026 — Innovate, Adopt, Reuse. November 2, 2026 in Bangalore and Hyderabad."
+            className="ts-banner-img"
+          />
         </div>
 
-        {/* Scanned Booth Callout if user entered via QR */}
-        {targetBooth && (
-          <div className="ts-hero-scanned-card">
-            <span className="ts-hero-scanned-icon">{targetBooth.icon}</span>
-            <div className="ts-hero-scanned-text">
-              <span className="ts-hero-scanned-label">QR CODE DETECTED</span>
-              <h3 className="ts-hero-scanned-title">Booth #{targetBooth.number}: {targetBooth.title}</h3>
-            </div>
-          </div>
-        )}
-
-        {/* Schedule Glass Strip */}
-        <div className="ts-hero-schedule-strip">
-          <div className="ts-hero-schedule-item">
-            <span className="ts-hero-schedule-icon" aria-hidden="true">🎙️</span>
-            <div className="ts-hero-schedule-copy">
-              <span className="ts-hero-schedule-label">Tech Talks</span>
-              <span className="ts-hero-schedule-date">October 26–30, 2026</span>
-            </div>
-          </div>
-          <div className="ts-hero-schedule-divider" aria-hidden="true" />
-          <div className="ts-hero-schedule-item">
-            <span className="ts-hero-schedule-icon" aria-hidden="true">🏆</span>
-            <div className="ts-hero-schedule-copy">
-              <span className="ts-hero-schedule-label">Flagship Event</span>
-              <span className="ts-hero-schedule-date">November 2, 2026</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero CTA & User Status */}
-        <div className="ts-hero-cta-group">
-          <button
-            type="button"
-            className="ts-hero-primary-btn"
-            onClick={hasSavedQuiz ? onResume : onStart}
-          >
-            <span className="ts-hero-primary-btn__text">
-              {hasSavedQuiz
-                ? 'Resume Active Quiz ⚡'
-                : participant
-                ? 'Enter Challenge Passport →'
-                : 'Register for Tech Challenge ⚡'}
+        <div className="ts-hero-content">
+          <div className="ts-hero-copy">
+            <span className="ts-hero-eyebrow">
+              <span className="ts-hero-eyebrow__dot" aria-hidden="true" />
+              INNOVATION, IN ACTION
             </span>
-          </button>
+            <h1 className="ts-hero-title">Ideas become <span>impact.</span></h1>
+            <p className="ts-hero-description">
+              Explore nine technology showcases, take a 60-second challenge at each booth,
+              and track your progress in your digital passport.
+            </p>
+          </div>
 
-          {participant ? (
-            <div className="ts-hero-user-strip">
-              <span>👋 Welcome back, <strong>{participant.name}</strong> ({participant.entId})</span>
-              <button type="button" className="ts-hero-passport-link" onClick={onOpenPassport}>
-                Passport Progress ({completedCount}/{REQUIRED_BOOTHS_TO_WIN}) →
-              </button>
+          {targetBooth && (
+            <div className="ts-hero-scanned-card">
+              <span className="ts-hero-scanned-icon">{targetBooth.icon}</span>
+              <div className="ts-hero-scanned-text">
+                <span className="ts-hero-scanned-label">QR CODE DETECTED</span>
+                <h3 className="ts-hero-scanned-title">Booth #{targetBooth.number}: {targetBooth.title}</h3>
+              </div>
             </div>
-          ) : (
+          )}
+
+          <div className="ts-hero-cta-group">
             <button
               type="button"
-              className="ts-hero-rules-link"
-              onClick={() => setShowInfoModal(true)}
+              className="ts-hero-primary-btn"
+              onClick={hasSavedQuiz ? onResume : onStart}
             >
-              ⓘ View Challenge Guidelines & Prize Rules
+              <span className="ts-hero-primary-btn__text">
+                {hasSavedQuiz
+                  ? 'Resume Active Quiz ⚡'
+                  : participant
+                  ? 'Enter Challenge Passport →'
+                  : 'Register for Tech Challenge ⚡'}
+              </span>
             </button>
-          )}
-        </div>
-      </div>
 
-      {/* 2. Challenge Overview Stats */}
+            {participant ? (
+              <div className="ts-hero-user-strip">
+                <span>👋 Welcome back, <strong>{participant.name}</strong> ({participant.email || participant.entId})</span>
+                <button type="button" className="ts-hero-passport-link" onClick={onOpenPassport}>
+                  Passport Progress ({completedCount}/{REQUIRED_BOOTHS_TO_WIN}) →
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="ts-hero-rules-link"
+                onClick={() => setShowInfoModal(true)}
+              >
+                ⓘ View Challenge Guidelines &amp; Prize Rules
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
       <div className="ts-info-cards">
         <div className="ts-info-card">
           <span className="ts-info-card__icon" aria-hidden="true">🎪</span>
@@ -141,7 +125,6 @@ export function Welcome({
         </div>
       </div>
 
-      {/* 3. The 9-Booth Technology Challenge Section */}
       <div className="ts-showcase-section">
         <div className="ts-showcase-section__header">
           <span className="ts-page__eyebrow">EXPLORE & COMPETE</span>

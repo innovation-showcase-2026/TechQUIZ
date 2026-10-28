@@ -1,10 +1,10 @@
 export interface Participant {
   name: string;
-  entId: string;
-  lob?: string;
-  company?: string;
+  email: string;
   role?: string;
-  email?: string;
+  entId?: string; // Legacy fallback
+  lob?: string;   // Legacy fallback
+  company?: string;
 }
 
 export interface DeviceMetadata {

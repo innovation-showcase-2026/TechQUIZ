@@ -31,28 +31,33 @@ export interface ParticipantFetchResult {
   error?: string;
 }
 
+export function getParticipantDocKey(p: Partial<Participant> | string): string {
+  if (typeof p === 'string') {
+    return p.trim().toLowerCase();
+  }
+  return (p.email || p.entId || 'UNKNOWN').trim().toLowerCase();
+}
+
 /**
- * Registers participant in Firestore: participants/{entId}
+ * Registers participant in Firestore: participants/{email}
  * Preserves any existing test results using { merge: true }.
  */
 export async function registerParticipantInFirestore(participant: Participant): Promise<{ success: boolean; error?: string }> {
-  const entId = (participant.entId || 'UNKNOWN').trim().toUpperCase();
-  if (!entId || entId === 'UNKNOWN') {
-    return { success: false, error: 'Invalid Enterprise ID' };
+  const docKey = getParticipantDocKey(participant);
+  if (!docKey || docKey === 'unknown') {
+    return { success: false, error: 'Invalid participant email' };
   }
 
   const now = new Date().toISOString();
-  const participantRef = doc(db, 'participants', entId);
+  const participantRef = doc(db, 'participants', docKey);
 
   try {
     const existingSnap = await getDoc(participantRef);
     const existingData = existingSnap.exists() ? existingSnap.data() : null;
 
     const registrationData = {
-      entId,
-      name: participant.name,
-      lob: participant.lob || 'N/A',
-      company: participant.company || 'Wells Fargo',
+      email: participant.email.trim().toLowerCase(),
+      name: participant.name.trim(),
       role: participant.role || 'Summit Attendee',
       registeredAt: existingData?.registeredAt || now,
       status: 'REGISTERED',
@@ -66,18 +71,18 @@ export async function registerParticipantInFirestore(participant: Participant): 
     };
 
     await setDoc(participantRef, registrationData, { merge: true });
-    console.log(`[Firestore] ✓ Registered participant ${entId} (${participant.name})`);
+    console.log(`[Firestore] ✓ Registered participant ${docKey} (${participant.name})`);
     return { success: true };
   } catch (err: any) {
-    console.warn(`[Firestore] Failed to register participant ${entId}:`, err);
+    console.warn(`[Firestore] Failed to register participant ${docKey}:`, err);
     return { success: false, error: err.message };
   }
 }
 
 /**
  * Saves completed booth quiz result into:
- * 1. Subcollection: participants/{entId}/booths/booth-{boothNumber}
- * 2. Root document: participants/{entId} (recalculated summary & prize eligibility)
+ * 1. Subcollection: participants/{email}/booths/booth-{boothNumber}
+ * 2. Root document: participants/{email} (recalculated summary & prize eligibility)
  * 3. Flat collection: submissions/{submissionId} (for live analytics & export)
  */
 export async function saveBoothResultInFirestore(
@@ -85,13 +90,13 @@ export async function saveBoothResultInFirestore(
   submission: Submission,
   allBoothResults: Record<string, BoothResult>
 ): Promise<{ success: boolean; error?: string }> {
-  const entId = (participant.entId || 'UNKNOWN').trim().toUpperCase();
+  const docKey = getParticipantDocKey(participant);
   const boothNumber = submission.booth?.boothNumber || 1;
   const now = submission.submission?.completedAt || new Date().toISOString();
 
   try {
     // 1. Save specific booth result in subcollection
-    const boothDocRef = doc(db, 'participants', entId, 'booths', `booth-${boothNumber}`);
+    const boothDocRef = doc(db, 'participants', docKey, 'booths', `booth-${boothNumber}`);
     await setDoc(boothDocRef, {
       ...submission,
       savedAt: now,
@@ -118,10 +123,8 @@ export async function saveBoothResultInFirestore(
     const totalTests = completedList.length;
 
     const summaryData = {
-      entId,
-      name: participant.name,
-      lob: participant.lob || 'N/A',
-      company: participant.company || 'Wells Fargo',
+      email: participant.email.trim().toLowerCase(),
+      name: participant.name.trim(),
       role: participant.role || 'Summit Attendee',
       totalTestsAppeared: totalTests,
       totalScore,
@@ -142,44 +145,56 @@ export async function saveBoothResultInFirestore(
       })),
     };
 
-    const participantRef = doc(db, 'participants', entId);
+    const participantRef = doc(db, 'participants', docKey);
     await setDoc(participantRef, summaryData, { merge: true });
 
-    console.log(`[Firestore] ✓ Saved booth ${boothNumber} result for ${entId} (Total tests: ${totalTests})`);
+    console.log(`[Firestore] ✓ Saved booth ${boothNumber} result for ${docKey} (Total tests: ${totalTests})`);
     return { success: true };
   } catch (err: any) {
-    console.warn(`[Firestore] Error saving booth result for ${entId}:`, err);
+    console.warn(`[Firestore] Error saving booth result for ${docKey}:`, err);
     return { success: false, error: err.message };
   }
 }
 
 /**
  * Fetches participant details and all completed booth records from Firestore.
- * Executed when participant inputs their Enterprise ID on any device.
+ * Executed when participant inputs their email or accesses via URL param.
  */
-export async function fetchParticipantFromFirestore(entId: string): Promise<ParticipantFetchResult> {
-  const cleanId = (entId || '').trim().toUpperCase();
+export async function fetchParticipantFromFirestore(identifier: string): Promise<ParticipantFetchResult> {
+  const cleanId = (identifier || '').trim().toLowerCase();
   if (!cleanId) return { exists: false };
 
   try {
-    const participantRef = doc(db, 'participants', cleanId);
-    const snap = await getDoc(participantRef);
+    let participantRef = doc(db, 'participants', cleanId);
+    let snap = await getDoc(participantRef);
+
+    // Fallback: check upper-case if legacy EntID was passed
+    if (!snap.exists()) {
+      const upperId = cleanId.toUpperCase();
+      if (upperId !== cleanId) {
+        const upperRef = doc(db, 'participants', upperId);
+        const upperSnap = await getDoc(upperRef);
+        if (upperSnap.exists()) {
+          snap = upperSnap;
+          participantRef = upperRef;
+        }
+      }
+    }
 
     if (!snap.exists()) {
       return { exists: false };
     }
 
     const data = snap.data();
+    const resolvedEmail = data.email || (cleanId.includes('@') ? cleanId : '');
     const participant: Participant = {
       name: data.name || '',
-      entId: cleanId,
-      lob: data.lob || '',
-      company: data.company || 'Wells Fargo',
+      email: resolvedEmail || cleanId,
       role: data.role || 'Summit Attendee',
     };
 
     // Retrieve all completed booth results from subcollection
-    const boothsCol = collection(db, 'participants', cleanId, 'booths');
+    const boothsCol = collection(participantRef, 'booths');
     const boothsSnap = await getDocs(boothsCol);
     const boothResults: Record<string, BoothResult> = {};
 
