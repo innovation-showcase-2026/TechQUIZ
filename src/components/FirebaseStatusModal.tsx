@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { testFirestoreConnection } from '../services/firebaseService';
 import { Button } from './Button';
+import { ServerIcon, CloseIcon, ZapIcon } from './Icons';
 
 interface FirebaseStatusModalProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
         <div className="ts-modal-header">
           <div className="ts-modal-header__brand">
             <div className="ts-modal-header__icon-badge" aria-hidden="true">
-              🔥
+              <ServerIcon size={18} />
             </div>
             <div>
               <div className="ts-modal-eyebrow">DATABASE DIAGNOSTICS</div>
@@ -56,7 +57,7 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
             onClick={onClose}
             aria-label="Close dialog"
           >
-            ✕
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -108,7 +109,11 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
               onClick={handleTestConnection}
               disabled={status === 'testing'}
             >
-              {status === 'testing' ? 'Pinging Firestore...' : '⚡ Test Connection'}
+              {status === 'testing' ? 'Pinging Firestore...' : (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <ZapIcon size={16} /> Test Connection
+                </span>
+              )}
             </Button>
           </div>
         </div>

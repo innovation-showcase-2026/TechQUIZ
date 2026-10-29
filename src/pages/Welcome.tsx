@@ -2,6 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import type { BoothConfig, Participant } from '../types';
 import { Button } from '../components/Button';
 import { BOOTHS, MAX_BOOTHS_PER_PARTICIPANT, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
+import {
+  SparklesIcon,
+  GridIcon,
+  TargetIcon,
+  ClockIcon,
+  ChevronRightIcon,
+  HomeIcon,
+  TicketIcon,
+  HelpCircleIcon,
+  UserIcon,
+  CloseIcon,
+  getBoothIcon,
+} from '../components/Icons';
 
 interface WelcomeProps {
   targetBooth: BoothConfig | null;
@@ -82,23 +95,19 @@ export function Welcome({
   return (
     <div className="ts-page ts-page--welcome">
       <section className="ts-hero-card" role="region" aria-label="Innovation Showcase 2026">
-        <div className="ts-hero-card__glow-mesh" aria-hidden="true" />
+        <div className="ts-hero-card__orb" aria-hidden="true" />
 
         <div className="ts-hero-content">
           <div className="ts-hero-copy">
             <span className="ts-hero-eyebrow">
-              <span aria-hidden="true">💡</span>
+              <SparklesIcon size={14} className="ts-hero-eyebrow__icon" aria-hidden="true" />
               WELCOME, INNOVATOR!
             </span>
-            <h1 className="ts-hero-title">Ideas become <span>impact.</span></h1>
+            <h1 className="ts-hero-title">Ideas become <span className="ts-gradient-text">impact.</span></h1>
             <p className="ts-hero-description">
               Explore nine technology showcases, take on up to four challenges, and earn your
               spot on the leaderboard!
             </p>
-            <div className="ts-hero-journey">
-              <span className="ts-hero-journey__icon" aria-hidden="true">◎</span>
-              <span>Your journey starts with the<br /><strong>9 technology booths.</strong></span>
-            </div>
           </div>
 
           <svg className="ts-hero-art" viewBox="0 0 360 420" role="img" aria-label="Glowing light bulb representing innovation">
@@ -139,7 +148,7 @@ export function Welcome({
 
           {targetBooth && (
             <div className="ts-hero-scanned-card">
-              <span className="ts-hero-scanned-icon">{targetBooth.icon}</span>
+              <span className="ts-hero-scanned-icon">{getBoothIcon(targetBooth.number, 24)}</span>
               <div className="ts-hero-scanned-text">
                 <span className="ts-hero-scanned-label">QR CODE DETECTED</span>
                 <h3 className="ts-hero-scanned-title">Booth #{targetBooth.number}: {targetBooth.title}</h3>
@@ -155,16 +164,16 @@ export function Welcome({
             >
               <span className="ts-hero-primary-btn__text">
                 {hasSavedQuiz
-                  ? 'Resume Active Quiz ⚡'
+                  ? 'Resume Active Quiz'
                   : participant
-                  ? 'Enter Challenge Passport →'
-                  : 'Register for Tech Challenge ⚡'}
+                  ? 'Enter Challenge Passport'
+                  : 'Register for Tech Challenge'}
               </span>
             </button>
 
             {participant ? (
               <div className="ts-hero-user-strip">
-                <span>👋 Welcome back, <strong>{participant.name}</strong> ({participant.email || participant.entId})</span>
+                <span>Welcome back, <strong>{participant.name}</strong> ({participant.email || participant.entId})</span>
                 <button type="button" className="ts-hero-passport-link" onClick={onOpenPassport}>
                   Passport Progress ({completedCount}/{REQUIRED_BOOTHS_TO_WIN}) →
                 </button>
@@ -175,7 +184,7 @@ export function Welcome({
                 className="ts-hero-rules-link"
                 onClick={() => setShowInfoModal(true)}
               >
-                ⓘ View Challenge Guidelines &amp; Prize Rules
+                View Challenge Guidelines &amp; Prize Rules
               </button>
             )}
           </div>
@@ -184,17 +193,17 @@ export function Welcome({
 
       <div className="ts-info-cards">
         <div className="ts-info-card">
-          <span className="ts-info-card__icon" aria-hidden="true">🏬</span>
+          <span className="ts-info-card__icon" aria-hidden="true"><GridIcon size={22} /></span>
           <span className="ts-info-card__value">{TOTAL_BOOTHS}</span>
           <span className="ts-info-card__label">TECH BOOTHS</span>
         </div>
         <div className="ts-info-card">
-          <span className="ts-info-card__icon" aria-hidden="true">🏆</span>
+          <span className="ts-info-card__icon" aria-hidden="true"><TargetIcon size={22} /></span>
           <span className="ts-info-card__value">{REQUIRED_BOOTHS_TO_WIN}</span>
           <span className="ts-info-card__label">TO WIN</span>
         </div>
         <div className="ts-info-card">
-          <span className="ts-info-card__icon" aria-hidden="true">◷</span>
+          <span className="ts-info-card__icon" aria-hidden="true"><ClockIcon size={22} /></span>
           <span className="ts-info-card__value">60s</span>
           <span className="ts-info-card__label">PER CHALLENGE</span>
         </div>
@@ -203,8 +212,10 @@ export function Welcome({
       <div className="ts-showcase-section" id="booths">
         <div className="ts-showcase-section__header">
           <div className="ts-showcase-section__heading-row">
-            <h2 className="ts-showcase-section__title"><span aria-hidden="true">🏬</span> Explore the Booths</h2>
-            <a className="ts-showcase-view-all" href="#booths-grid">View All <span aria-hidden="true">›</span></a>
+            <h2 className="ts-showcase-section__title">Explore the Booths</h2>
+            <a className="ts-showcase-view-all" href="#booths-grid">
+              View All <ChevronRightIcon size={16} aria-hidden="true" />
+            </a>
           </div>
           <p className="ts-showcase-section__desc">
             Each booth brings a unique challenge. Choose a booth, answer the questions and earn points!
@@ -226,7 +237,7 @@ export function Welcome({
             >
               <div className="ts-showcase-booth-card__top">
                 <span className="ts-showcase-booth-card__num">BOOTH #{b.number}</span>
-                <span className="ts-showcase-booth-card__icon" aria-hidden="true">{b.icon}</span>
+                <span className="ts-showcase-booth-card__icon" aria-hidden="true">{getBoothIcon(b.number, 22)}</span>
               </div>
 
               <h3 className="ts-showcase-booth-card__title">{b.title}</h3>
@@ -236,9 +247,9 @@ export function Welcome({
                 <span className="ts-showcase-booth-card__action">
                   {participant
                     ? completedCount >= MAX_BOOTHS_PER_PARTICIPANT ? 'Limit reached' : 'Start Quiz'
-                    : 'Register & Play'} <span aria-hidden="true">›</span>
+                    : 'Register & Play'}
                 </span>
-                <span className="ts-showcase-booth-card__arrow" aria-hidden="true">›</span>
+                <span className="ts-showcase-booth-card__arrow" aria-hidden="true"><ChevronRightIcon size={18} /></span>
               </div>
             </div>
           ))}
@@ -247,42 +258,49 @@ export function Welcome({
 
       {/* 4. Action Banner */}
       <div className="ts-welcome-actions">
-        <Button onClick={hasSavedQuiz ? onResume : onStart} fullWidth>
+        <Button onClick={hasSavedQuiz ? onResume : onStart} fullWidth variant="secondary">
           {hasSavedQuiz
-            ? 'RESUME CURRENT QUIZ ⚡'
+            ? 'Resume Current Quiz'
             : participant
-            ? 'VIEW FULL PASSPORT & PROGRESS →'
-            : 'REGISTER FOR INNOVATION SHOWCASE ⚡'}
+            ? 'View Full Passport & Progress'
+            : 'Register for Innovation Showcase'}
         </Button>
 
         {participant && (
           <Button variant="secondary" onClick={onOpenPassport} fullWidth>
             {isWinner
-              ? '🏆 VIEW WINNER PASSPORT'
-              : `📊 VIEW PASSPORT PROGRESS (${completedCount}/${REQUIRED_BOOTHS_TO_WIN} COMPLETED)`}
+              ? 'View Winner Passport'
+              : `View Passport Progress (${completedCount}/${REQUIRED_BOOTHS_TO_WIN} Completed)`}
           </Button>
         )}
       </div>
 
       <p className="ts-page__footer">
-        Scan a booth QR code or launch a quiz above. Registration and completed quiz results sync to Firebase Firestore and are cached on this device.
+        Scan a booth QR code to unlock its quiz.
       </p>
 
       <nav className="ts-mobile-nav" aria-label="Showcase navigation">
         <button type="button" className="ts-mobile-nav__item ts-mobile-nav__item--active" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <span aria-hidden="true">⌂</span><small>Home</small>
+          <span className="ts-mobile-nav__icon"><HomeIcon size={22} /></span>
+          <small>Home</small>
         </button>
         <button type="button" className="ts-mobile-nav__item" onClick={() => document.getElementById('booths')?.scrollIntoView({ behavior: 'smooth' })}>
-          <span aria-hidden="true">▣</span><small>Booths</small>
+          <span className="ts-mobile-nav__icon"><GridIcon size={22} /></span>
+          <small>Booths</small>
         </button>
-        <button type="button" className="ts-mobile-nav__item" onClick={onOpenPassport}>
-          <span aria-hidden="true">🏆</span><small>Passport</small>
+        <button type="button" className="ts-mobile-nav__item ts-mobile-nav__item--passport" onClick={onOpenPassport} aria-label="Open Passport">
+          <div className="ts-mobile-nav__passport-bubble">
+            <TicketIcon size={26} />
+          </div>
+          <small>Passport</small>
         </button>
         <button type="button" className="ts-mobile-nav__item" onClick={() => setShowInfoModal(true)}>
-          <span aria-hidden="true">?</span><small>FAQs</small>
+          <span className="ts-mobile-nav__icon"><HelpCircleIcon size={22} /></span>
+          <small>FAQs</small>
         </button>
         <button type="button" className="ts-mobile-nav__item" onClick={onStart}>
-          <span aria-hidden="true">♙</span><small>Profile</small>
+          <span className="ts-mobile-nav__icon"><UserIcon size={22} /></span>
+          <small>Profile</small>
         </button>
       </nav>
 
@@ -299,7 +317,7 @@ export function Welcome({
           >
             <div className="ts-modal-header">
               <div className="ts-modal-header__brand">
-                <div className="ts-modal-header__icon-badge" aria-hidden="true">💡</div>
+                <div className="ts-modal-header__icon-badge" aria-hidden="true"><SparklesIcon size={18} /></div>
                 <div>
                   <div className="ts-modal-eyebrow">CHALLENGE GUIDELINES</div>
                   <h2 id="welcome-guidelines-title" className="ts-modal-title">Innovation Showcase 2026</h2>
@@ -312,7 +330,7 @@ export function Welcome({
                 onClick={() => setShowInfoModal(false)}
                 aria-label="Close"
               >
-                ✕
+                <CloseIcon size={18} />
               </button>
             </div>
 

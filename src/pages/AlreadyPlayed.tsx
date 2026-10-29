@@ -1,6 +1,7 @@
 import type { BoothResult, QuizResult } from '../types';
 import { Button } from '../components/Button';
 import { REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
+import { LockIcon, TrophyIcon, TargetIcon } from '../components/Icons';
 
 interface AlreadyPlayedProps {
   boothResult: BoothResult | null;
@@ -28,7 +29,8 @@ export function AlreadyPlayed({
       <div className="ts-page__container">
         {/* Restriction Badge */}
         <div className="ts-restriction-badge">
-          <span>🔒 ATTEMPT ALREADY RECORDED • RETAKE RESTRICTED</span>
+          <LockIcon size={14} />
+          <span>ATTEMPT ALREADY RECORDED • RETAKE RESTRICTED</span>
         </div>
 
         <div className="ts-already-icon" aria-hidden="true">
@@ -66,14 +68,14 @@ export function AlreadyPlayed({
             </div>
             <div className="ts-already-summary__row">
               <span>Correct Answers</span>
-              <span className="ts-already-summary__value" style={{ color: '#1B7A3D' }}>
+              <span className="ts-already-summary__value ts-result-value--correct">
                 {result.correctAnswers} of {result.totalQuestions}
               </span>
             </div>
             {result.incorrectAnswers > 0 && (
               <div className="ts-already-summary__row">
                 <span>Incorrect Answers</span>
-                <span className="ts-already-summary__value" style={{ color: '#B3192B' }}>
+                <span className="ts-already-summary__value ts-result-value--incorrect">
                   {result.incorrectAnswers}
                 </span>
               </div>
@@ -96,7 +98,7 @@ export function AlreadyPlayed({
         {/* Milestone info */}
         <div className={`ts-milestone-card ${isWinner ? 'ts-milestone-card--winner' : 'ts-milestone-card--progress'}`}>
           <div className="ts-milestone-icon" aria-hidden="true">
-            {isWinner ? '🏆' : '📍'}
+            {isWinner ? <TrophyIcon size={24} /> : <TargetIcon size={24} />}
           </div>
           <div className="ts-milestone-info">
             <h3 className="ts-milestone-title">

@@ -5,6 +5,7 @@ import {
   fetchParticipantFromFirestore,
   saveParticipantRegistrationInFirestore,
 } from '../services/firebaseService';
+import { getBoothIcon } from '../components/Icons';
 
 interface ParticipantDetailsProps {
   initialData: Partial<Participant> | null;
@@ -106,7 +107,7 @@ export function ParticipantDetails({
       <div className="ts-page__container">
         {targetBooth && (
           <div className="ts-participant-booth-pill">
-            <span>{targetBooth.icon}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>{getBoothIcon(targetBooth.number, 18)}</span>
             <span>Booth {targetBooth.number}: <strong>{targetBooth.title}</strong></span>
           </div>
         )}

@@ -2,6 +2,7 @@ import type { QuizResult } from '../types';
 import { Button } from '../components/Button';
 import { ScoreCard } from '../components/ScoreCard';
 import { REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
+import { CheckIcon, TrophyIcon, TargetIcon } from '../components/Icons';
 
 interface ResultsProps {
   result: QuizResult;
@@ -28,7 +29,8 @@ export function Results({
       <div className="ts-page__container">
         {boothNumber && (
           <div className="ts-results-booth-pill">
-            <span>✓ BOOTH {boothNumber} CHALLENGE SUBMITTED</span>
+            <CheckIcon size={14} />
+            <span>BOOTH {boothNumber} CHALLENGE SUBMITTED</span>
           </div>
         )}
 
@@ -41,11 +43,11 @@ export function Results({
         {/* Milestone Card */}
         <div className={`ts-milestone-card ${isWinner ? 'ts-milestone-card--winner' : 'ts-milestone-card--progress'}`}>
           <div className="ts-milestone-icon" aria-hidden="true">
-            {isWinner ? '🏆' : '🎯'}
+            {isWinner ? <TrophyIcon size={24} /> : <TargetIcon size={24} />}
           </div>
           <div className="ts-milestone-info">
             <h3 className="ts-milestone-title">
-              {isWinner ? '🎉 SUMMIT WINNER STATUS UNLOCKED!' : `MILESTONE: ${completedCount} OF ${REQUIRED_BOOTHS_TO_WIN} TO WIN`}
+              {isWinner ? 'SUMMIT WINNER STATUS UNLOCKED!' : `MILESTONE: ${completedCount} OF ${REQUIRED_BOOTHS_TO_WIN} TO WIN`}
             </h3>
             <p className="ts-milestone-desc">
               {isWinner
@@ -63,7 +65,7 @@ export function Results({
 
         <div className="ts-results-actions">
           <Button onClick={onDone} fullWidth>
-            VIEW MY SUMMIT PASSPORT & ALL RESULTS →
+            View Summit Passport &amp; Progress
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { playScanSound, playErrorSound, parseBoothFromScan } from '../utils/qrHelper';
 import type { BoothConfig } from '../types';
+import { CloseIcon, CheckIcon, HelpCircleIcon } from './Icons';
 
 interface QRScannerModalProps {
   isOpen: boolean;
@@ -290,7 +291,7 @@ export function QRScannerModal({
             onClick={handleClose}
             aria-label="Close camera scanner"
           >
-            ✕
+            <CloseIcon size={20} />
           </button>
         </div>
 
@@ -322,7 +323,7 @@ export function QRScannerModal({
             {/* Success indicator */}
             {hasScanned && (
               <div className="ts-scanner-status-overlay ts-scanner-status-overlay--success">
-                <span className="ts-scanner-check">✓</span>
+                <span className="ts-scanner-check"><CheckIcon size={24} /></span>
                 <span>QR Scanned! Launching Challenge...</span>
               </div>
             )}
@@ -330,14 +331,14 @@ export function QRScannerModal({
             {/* Error overlay */}
             {cameraError && (
               <div className="ts-scanner-status-overlay ts-scanner-status-overlay--error">
-                <span className="ts-scanner-err-icon">⚠️</span>
+                <span className="ts-scanner-err-icon"><HelpCircleIcon size={24} /></span>
                 <p className="ts-scanner-err-text">{cameraError}</p>
                 <button
                   type="button"
                   className="ts-scanner-retry-btn"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  📁 Upload Photo of QR Code
+                  Upload Photo of QR Code
                 </button>
               </div>
             )}
@@ -345,7 +346,7 @@ export function QRScannerModal({
             {/* Booth mismatch error overlay */}
             {boothMismatch && (
               <div className="ts-scanner-status-overlay ts-scanner-status-overlay--mismatch" role="alert">
-                <span className="ts-scanner-err-icon">❌</span>
+                <span className="ts-scanner-err-icon"><CloseIcon size={24} /></span>
                 <div className="ts-scanner-mismatch-title">WRONG BOOTH SCANNED</div>
                 <p className="ts-scanner-mismatch-desc">
                   You clicked to scan <strong>Booth {boothMismatch.expectedBooth.number} ({boothMismatch.expectedBooth.title})</strong>,
@@ -359,7 +360,7 @@ export function QRScannerModal({
                   className="ts-scanner-retry-btn ts-scanner-retry-btn--mismatch"
                   onClick={handleDismissMismatch}
                 >
-                  🔄 Scan Booth {boothMismatch.expectedBooth.number} Again
+                  Scan Booth {boothMismatch.expectedBooth.number} Again
                 </button>
               </div>
             )}
@@ -395,7 +396,7 @@ export function QRScannerModal({
                 className={`ts-scanner-tool-btn ${torchOn ? 'ts-scanner-tool-btn--active' : ''}`}
                 onClick={handleToggleTorch}
               >
-                🔦 {torchOn ? 'Flash On' : 'Flash Off'}
+                {torchOn ? 'Flashlight On' : 'Flashlight Off'}
               </button>
             )}
 
