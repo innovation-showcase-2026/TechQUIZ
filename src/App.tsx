@@ -526,7 +526,7 @@ export default function App() {
 
   return (
     <>
-      {(stage !== 'WELCOME' || loadError) && (
+      {(stage !== 'WELCOME' && stage !== 'PASSPORT' || loadError) && (
         <Header
           completedCount={completedCount}
           isWinner={isWinner}
@@ -534,7 +534,7 @@ export default function App() {
           isPassportActive={stage === 'PASSPORT'}
         />
       )}
-      <Layout wide={stage === 'WELCOME' && !loadError}>
+      <Layout wide={stage === 'WELCOME' && !loadError} showBanner={stage === 'WELCOME'}>
         {loadError && (
           <div className="ts-page">
             <div className="ts-page__container">
@@ -623,6 +623,7 @@ export default function App() {
             onLaunchBooth={handleLaunchBoothFromPassport}
             onOpenUrl={handleOpenScannedUrl}
             onEditProfile={() => setStage('PARTICIPANT')}
+            onGoHome={() => setStage('WELCOME')}
           />
         )}
         </Suspense>
@@ -633,7 +634,7 @@ export default function App() {
               RESET ALL PARTICIPATION DATA
             </Button>
             <Button variant="ghost" onClick={() => setIsFirebaseModalOpen(true)}>
-              🔥 FIREBASE STATUS
+              FIREBASE STATUS
             </Button>
           </div>
         )}

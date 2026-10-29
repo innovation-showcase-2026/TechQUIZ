@@ -1,20 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import type { BoothConfig, Participant } from '../types';
 import { Button } from '../components/Button';
-import { BOOTHS, MAX_BOOTHS_PER_PARTICIPANT, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
+import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
 import {
   SparklesIcon,
-  GridIcon,
-  TargetIcon,
-  ClockIcon,
   ChevronRightIcon,
-  HomeIcon,
-  TicketIcon,
-  HelpCircleIcon,
-  UserIcon,
   CloseIcon,
   getBoothIcon,
 } from '../components/Icons';
+
+import { MobileNav } from '../components/MobileNav';
 
 interface WelcomeProps {
   targetBooth: BoothConfig | null;
@@ -41,7 +36,6 @@ export function Welcome({
   const modalRef = useRef<HTMLDivElement>(null);
   const modalCloseButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
-  const isWinner = completedCount >= REQUIRED_BOOTHS_TO_WIN;
 
   useEffect(() => {
     if (!showInfoModal) return;
@@ -101,12 +95,14 @@ export function Welcome({
           <div className="ts-hero-copy">
             <span className="ts-hero-eyebrow">
               <SparklesIcon size={14} className="ts-hero-eyebrow__icon" aria-hidden="true" />
-              WELCOME, INNOVATOR!
+              WELCOME, INNOVATOR
             </span>
-            <h1 className="ts-hero-title">Ideas become <span className="ts-gradient-text">impact.</span></h1>
+            <h1 className="ts-hero-title">
+              Ideas become<br />
+              <span className="ts-gradient-text">impact.</span>
+            </h1>
             <p className="ts-hero-description">
-              Explore nine technology showcases, take on up to four challenges, and earn your
-              spot on the leaderboard!
+              Explore nine showcases, take on up to four challenges and earn your spot on the leaderboard.
             </p>
           </div>
 
@@ -148,10 +144,10 @@ export function Welcome({
 
           {targetBooth && (
             <div className="ts-hero-scanned-card">
-              <span className="ts-hero-scanned-icon">{getBoothIcon(targetBooth.number, 24)}</span>
+              <span className="ts-hero-scanned-icon">{getBoothIcon(targetBooth.number, 22)}</span>
               <div className="ts-hero-scanned-text">
                 <span className="ts-hero-scanned-label">QR CODE DETECTED</span>
-                <h3 className="ts-hero-scanned-title">Booth #{targetBooth.number}: {targetBooth.title}</h3>
+                <h3 className="ts-hero-scanned-title">Booth {targetBooth.number}: {targetBooth.title}</h3>
               </div>
             </div>
           )}
@@ -172,12 +168,9 @@ export function Welcome({
             </button>
 
             {participant ? (
-              <div className="ts-hero-user-strip">
-                <span>Welcome back, <strong>{participant.name}</strong> ({participant.email || participant.entId})</span>
-                <button type="button" className="ts-hero-passport-link" onClick={onOpenPassport}>
-                  Passport Progress ({completedCount}/{REQUIRED_BOOTHS_TO_WIN}) →
-                </button>
-              </div>
+              <button type="button" className="ts-hero-passport-link" onClick={onOpenPassport}>
+                Passport progress ({completedCount}/{REQUIRED_BOOTHS_TO_WIN})
+              </button>
             ) : (
               <button
                 type="button"
@@ -193,33 +186,27 @@ export function Welcome({
 
       <div className="ts-info-cards">
         <div className="ts-info-card">
-          <span className="ts-info-card__icon" aria-hidden="true"><GridIcon size={22} /></span>
           <span className="ts-info-card__value">{TOTAL_BOOTHS}</span>
-          <span className="ts-info-card__label">TECH BOOTHS</span>
+          <span className="ts-info-card__label">BOOTHS</span>
         </div>
         <div className="ts-info-card">
-          <span className="ts-info-card__icon" aria-hidden="true"><TargetIcon size={22} /></span>
           <span className="ts-info-card__value">{REQUIRED_BOOTHS_TO_WIN}</span>
           <span className="ts-info-card__label">TO WIN</span>
         </div>
         <div className="ts-info-card">
-          <span className="ts-info-card__icon" aria-hidden="true"><ClockIcon size={22} /></span>
           <span className="ts-info-card__value">60s</span>
-          <span className="ts-info-card__label">PER CHALLENGE</span>
+          <span className="ts-info-card__label">PER QUIZ</span>
         </div>
       </div>
 
       <div className="ts-showcase-section" id="booths">
         <div className="ts-showcase-section__header">
           <div className="ts-showcase-section__heading-row">
-            <h2 className="ts-showcase-section__title">Explore the Booths</h2>
+            <h2 className="ts-showcase-section__title">Explore the booths</h2>
             <a className="ts-showcase-view-all" href="#booths-grid">
-              View All <ChevronRightIcon size={16} aria-hidden="true" />
+              View all
             </a>
           </div>
-          <p className="ts-showcase-section__desc">
-            Each booth brings a unique challenge. Choose a booth, answer the questions and earn points!
-          </p>
         </div>
 
         <div className="ts-showcase-booths-grid" id="booths-grid">
@@ -235,22 +222,23 @@ export function Welcome({
                 if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) handleBoothClick(b);
               }}
             >
-              <div className="ts-showcase-booth-card__top">
-                <span className="ts-showcase-booth-card__num">BOOTH #{b.number}</span>
-                <span className="ts-showcase-booth-card__icon" aria-hidden="true">{getBoothIcon(b.number, 22)}</span>
+              <div className="ts-showcase-booth-card__icon" aria-hidden="true">
+                {getBoothIcon(b.number, 22)}
               </div>
 
-              <h3 className="ts-showcase-booth-card__title">{b.title}</h3>
-              <p className="ts-showcase-booth-card__desc">{b.description}</p>
-
-              <div className="ts-showcase-booth-card__footer">
-                <span className="ts-showcase-booth-card__action">
-                  {participant
-                    ? completedCount >= MAX_BOOTHS_PER_PARTICIPANT ? 'Limit reached' : 'Start Quiz'
-                    : 'Register & Play'}
-                </span>
-                <span className="ts-showcase-booth-card__arrow" aria-hidden="true"><ChevronRightIcon size={18} /></span>
+              <div className="ts-showcase-booth-card__content">
+                <span className="ts-showcase-booth-card__num">BOOTH {b.number}</span>
+                <h3 className="ts-showcase-booth-card__title">{b.title}</h3>
+                <p className="ts-showcase-booth-card__desc">{b.description}</p>
               </div>
+
+              {targetBooth?.id === b.id && (
+                <span className="ts-booth-scanned-pill">Scanned</span>
+              )}
+
+              <span className="ts-showcase-booth-card__arrow" aria-hidden="true">
+                <ChevronRightIcon size={18} />
+              </span>
             </div>
           ))}
         </div>
@@ -265,44 +253,20 @@ export function Welcome({
             ? 'View Full Passport & Progress'
             : 'Register for Innovation Showcase'}
         </Button>
-
-        {participant && (
-          <Button variant="secondary" onClick={onOpenPassport} fullWidth>
-            {isWinner
-              ? 'View Winner Passport'
-              : `View Passport Progress (${completedCount}/${REQUIRED_BOOTHS_TO_WIN} Completed)`}
-          </Button>
-        )}
       </div>
 
       <p className="ts-page__footer">
         Scan a booth QR code to unlock its quiz.
       </p>
 
-      <nav className="ts-mobile-nav" aria-label="Showcase navigation">
-        <button type="button" className="ts-mobile-nav__item ts-mobile-nav__item--active" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <span className="ts-mobile-nav__icon"><HomeIcon size={22} /></span>
-          <small>Home</small>
-        </button>
-        <button type="button" className="ts-mobile-nav__item" onClick={() => document.getElementById('booths')?.scrollIntoView({ behavior: 'smooth' })}>
-          <span className="ts-mobile-nav__icon"><GridIcon size={22} /></span>
-          <small>Booths</small>
-        </button>
-        <button type="button" className="ts-mobile-nav__item ts-mobile-nav__item--passport" onClick={onOpenPassport} aria-label="Open Passport">
-          <div className="ts-mobile-nav__passport-bubble">
-            <TicketIcon size={26} />
-          </div>
-          <small>Passport</small>
-        </button>
-        <button type="button" className="ts-mobile-nav__item" onClick={() => setShowInfoModal(true)}>
-          <span className="ts-mobile-nav__icon"><HelpCircleIcon size={22} /></span>
-          <small>FAQs</small>
-        </button>
-        <button type="button" className="ts-mobile-nav__item" onClick={onStart}>
-          <span className="ts-mobile-nav__icon"><UserIcon size={22} /></span>
-          <small>Profile</small>
-        </button>
-      </nav>
+      <MobileNav
+        activeItem="home"
+        onHome={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onBooths={() => document.getElementById('booths')?.scrollIntoView({ behavior: 'smooth' })}
+        onPassport={onOpenPassport}
+        onFaqs={() => setShowInfoModal(true)}
+        onProfile={onStart}
+      />
 
       {/* Info Dialog Modal */}
       {showInfoModal && (

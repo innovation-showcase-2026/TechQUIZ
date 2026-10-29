@@ -5,11 +5,11 @@ import { Button } from '../components/Button';
 import { QRScannerModal } from '../components/QRScannerModal';
 import { parseBoothFromScan, playErrorSound } from '../utils/qrHelper';
 import {
-  ScanIcon,
-  EditIcon,
   getBoothIcon,
   AlertCircleIcon,
 } from '../components/Icons';
+
+import { MobileNav } from '../components/MobileNav';
 
 interface PassportProps {
   participant: Participant | null;
@@ -20,6 +20,7 @@ interface PassportProps {
   onLaunchBooth?: (booth: BoothConfig) => void;
   onOpenUrl?: (url: string) => void;
   onEditProfile?: () => void;
+  onGoHome?: () => void;
 }
 
 export function Passport({
@@ -31,6 +32,7 @@ export function Passport({
   onLaunchBooth,
   onOpenUrl,
   onEditProfile,
+  onGoHome,
 }: PassportProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scanTargetBooth, setScanTargetBooth] = useState<BoothConfig | null>(null);
@@ -68,7 +70,6 @@ export function Passport({
   const handleScanSuccess = useCallback((decodedText: string) => {
     const { booth, externalUrl } = parseBoothFromScan(decodedText);
 
-    // If user clicked a specific booth button (e.g. Booth 9) but scanned a different booth (e.g. Booth 6)
     if (scanTargetBooth && booth && booth.id !== scanTargetBooth.id) {
       playErrorSound();
       setToastMessage(
@@ -101,36 +102,33 @@ export function Passport({
   return (
     <div className="ts-page ts-page--passport">
       <div className="ts-page__container ts-page__container--wide">
-        {/* Top Header Card */}
-        <div className="ts-passport-header">
-          <div className="ts-passport-user-card">
-            <div className="ts-passport-avatar" aria-hidden="true">
-              {participant?.name ? participant.name.charAt(0).toUpperCase() : 'P'}
-            </div>
-            <div className="ts-passport-user-info">
-              <span className="ts-passport-badge-tag">OFFICIAL SUMMIT PASSPORT</span>
-              <h1 className="ts-passport-user-name">
-                {participant ? participant.name : 'Summit Attendee'}
-              </h1>
-              {participant && (
-                <span className="ts-passport-user-email">{participant.email || participant.entId}</span>
-              )}
-            </div>
-            {onEditProfile && (
-              <button
-                type="button"
-                className="ts-passport-edit-btn"
-                onClick={onEditProfile}
-                title="Update registration details"
-              >
-                <EditIcon size={14} />
-                <span>Edit</span>
-              </button>
+        {/* 1. Profile header row (no card) */}
+        <div className="ts-passport-profile-header">
+          <div className="ts-passport-avatar" aria-hidden="true">
+            {participant?.name ? participant.name.charAt(0).toUpperCase() : 'P'}
+          </div>
+          <div className="ts-passport-user-info">
+            <span className="ts-passport-badge-tag">OFFICIAL SUMMIT PASSPORT</span>
+            <h1 className="ts-passport-user-name">
+              {participant ? participant.name : 'Summit Attendee'}
+            </h1>
+            {participant && (
+              <span className="ts-passport-user-email">{participant.email || participant.entId}</span>
             )}
           </div>
+          {onEditProfile && (
+            <button
+              type="button"
+              className="ts-passport-edit-btn"
+              onClick={onEditProfile}
+              title="Update registration details"
+            >
+              <span>Edit</span>
+            </button>
+          )}
         </div>
 
-        {/* Win / Progress Banner */}
+        {/* 2. Challenge progress card */}
         <div className={`ts-qualification-banner ${isWinner ? 'ts-qualification-banner--winner' : 'ts-qualification-banner--progress'}`}>
           <div className="ts-qualification-top-row">
             <h2 className="ts-qualification-title">
@@ -147,7 +145,6 @@ export function Passport({
               : `Complete ${remainingToWin} more booth ${remainingToWin === 1 ? 'quiz' : 'quizzes'} to unlock official prize qualification.`}
           </p>
 
-          {/* Progress bar toward 4-booth milestone */}
           <div className="ts-passport-progress-bar-wrap">
             <div className="ts-passport-progress-bar">
               <div
@@ -163,32 +160,32 @@ export function Passport({
           </div>
         </div>
 
-        {/* Aggregated Score Summary: 2x2 on mobile, 4 in a row on tablet */}
+        {/* 3. Stats: ONE .glass card with a 2x2 grid & hairline dividers */}
         <div className="ts-passport-stats-grid">
-          <div className="ts-stat-card">
+          <div className="ts-stat-cell ts-stat-cell--tl">
             <span className="ts-stat-card__number">{completedCount}/{TOTAL_BOOTHS}</span>
             <span className="ts-stat-card__label">BOOTHS PLAYED</span>
           </div>
-          <div className="ts-stat-card">
+          <div className="ts-stat-cell ts-stat-cell--tr">
             <span className="ts-stat-card__number">{stats.totalScore}/{stats.totalQuestions}</span>
             <span className="ts-stat-card__label">TOTAL SCORE</span>
           </div>
-          <div className="ts-stat-card">
+          <div className="ts-stat-cell ts-stat-cell--bl">
             <span className="ts-stat-card__number">{stats.accuracy}%</span>
             <span className="ts-stat-card__label">ACCURACY</span>
           </div>
-          <div className="ts-stat-card">
+          <div className="ts-stat-cell ts-stat-cell--br">
             <span className="ts-stat-card__number">{stats.avgTime}s</span>
             <span className="ts-stat-card__label">AVG TIME / BOOTH</span>
           </div>
         </div>
 
-        {/* 9 Booths Matrix */}
+        {/* 4. Booth status section */}
         <div className="ts-booths-matrix-section">
-          <div className="ts-matrix-header">
+          <div className="ts-matrix-header" id="booth-status">
             <div>
-              <h2 className="ts-matrix-title">Summit Booth Status</h2>
-              <span className="ts-matrix-subtitle">Choose up to {MAX_BOOTHS_PER_PARTICIPANT} of {TOTAL_BOOTHS} booths.</span>
+              <h2 className="ts-matrix-title">Booth status</h2>
+              <span className="ts-matrix-subtitle">Choose up to {MAX_BOOTHS_PER_PARTICIPANT} of {TOTAL_BOOTHS} booths</span>
             </div>
             <button
               type="button"
@@ -197,7 +194,6 @@ export function Passport({
               title="Open camera to scan any booth QR code"
               disabled={hasReachedBoothLimit}
             >
-              <ScanIcon size={16} />
               <span>{hasReachedBoothLimit ? 'Limit reached' : 'Scan QR'}</span>
             </button>
           </div>
@@ -208,6 +204,7 @@ export function Passport({
             </p>
           )}
 
+          {/* 5. Booth rows */}
           <div className="ts-booths-grid">
             {BOOTHS.map((booth) => {
               const res = boothResults[booth.id];
@@ -217,42 +214,33 @@ export function Passport({
                 <div
                   key={booth.id}
                   className={`ts-booth-card ${isCompleted ? 'ts-booth-card--completed' : 'ts-booth-card--pending'}`}
+                  onClick={() => {
+                    if (!isCompleted && !hasReachedBoothLimit) {
+                      handleOpenScanner(booth);
+                    }
+                  }}
+                  role={!isCompleted && !hasReachedBoothLimit ? 'button' : undefined}
+                  tabIndex={!isCompleted && !hasReachedBoothLimit ? 0 : undefined}
                 >
-                  <div className="ts-booth-card__top">
-                    <span className="ts-booth-card__number">BOOTH {booth.number}</span>
-                    <span className={`ts-booth-card__status-pill ${isCompleted ? 'ts-pill-done' : 'ts-pill-todo'}`}>
-                      {isCompleted ? 'Completed' : 'Awaiting visit'}
-                    </span>
+                  <div className="ts-booth-card__icon" aria-hidden="true">
+                    {getBoothIcon(booth.number, 22)}
                   </div>
-
-                  <div className="ts-booth-card__body">
-                    <div className="ts-booth-card__icon">{getBoothIcon(booth.number, 22)}</div>
-                    <div className="ts-booth-card__details">
-                      <h3 className="ts-booth-card__title">{booth.title}</h3>
-                      <p className="ts-booth-card__desc">{booth.description}</p>
+                  <div className="ts-booth-card__content">
+                    <div className="ts-booth-card__header-line">
+                      <span className="ts-booth-card__number">BOOTH {booth.number}</span>
+                      <span className={`ts-booth-card__status-pill ${isCompleted ? 'ts-pill-done' : 'ts-pill-todo'}`}>
+                        {isCompleted ? 'Completed' : 'Awaiting'}
+                      </span>
                     </div>
-                  </div>
-
-                  {isCompleted && res ? (
-                    <div className="ts-booth-card__result">
-                      <div className="ts-booth-card__score">
-                        <span>Score {res.score}/{res.totalQuestions} ({res.percentage}%) • {res.timeTakenSeconds}s • {new Date(res.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <h3 className="ts-booth-card__title">{booth.title}</h3>
+                    {isCompleted && res ? (
+                      <div className="ts-booth-card__stats-line">
+                        {res.score} / {res.totalQuestions} ({res.percentage}%) · {res.timeTakenSeconds}s
                       </div>
-                    </div>
-                  ) : (
-                    <div className="ts-booth-card__action">
-                      <button
-                        type="button"
-                        className="ts-booth-scan-btn"
-                        onClick={() => handleOpenScanner(booth)}
-                        title={`Scan Booth ${booth.number} (${booth.title}) standee QR code to unlock quiz`}
-                        disabled={hasReachedBoothLimit}
-                      >
-                        <ScanIcon size={16} />
-                        <span>{hasReachedBoothLimit ? 'Limit reached' : `Scan Booth ${booth.number} QR to play`}</span>
-                      </button>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="ts-booth-card__desc">{booth.description}</p>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -283,6 +271,16 @@ export function Passport({
             <span>{toastMessage}</span>
           </div>
         )}
+
+        {/* Floating Mobile Nav */}
+        <MobileNav
+          activeItem="passport"
+          onHome={onGoHome}
+          onBooths={() => document.getElementById('booth-status')?.scrollIntoView({ behavior: 'smooth' })}
+          onPassport={() => handleOpenScanner(null)}
+          onFaqs={onGoHome}
+          onProfile={onEditProfile}
+        />
       </div>
     </div>
   );
