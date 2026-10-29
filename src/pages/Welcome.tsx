@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BoothConfig, Participant } from '../types';
 import { Button } from '../components/Button';
 import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
@@ -7,8 +7,10 @@ import {
   ChevronRightIcon,
   CloseIcon,
   getBoothIcon,
+  AlertCircleIcon,
 } from '../components/Icons';
-
+import { QRScannerModal } from '../components/QRScannerModal';
+import { parseBoothFromScan, playErrorSound } from '../utils/qrHelper';
 import { MobileNav } from '../components/MobileNav';
 
 interface WelcomeProps {
@@ -33,6 +35,10 @@ export function Welcome({
   onSelectBooth,
 }: WelcomeProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scanTargetBooth, setScanTargetBooth] = useState<BoothConfig | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const modalRef = useRef<HTMLDivElement>(null);
   const modalCloseButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
@@ -78,12 +84,43 @@ export function Welcome({
     };
   }, [showInfoModal]);
 
-  const handleBoothClick = (booth: BoothConfig) => {
-    if (onSelectBooth) {
-      onSelectBooth(booth);
-    } else {
-      onStart();
+  const handleOpenScanner = useCallback((target?: BoothConfig | null) => {
+    setScanTargetBooth(target || null);
+    setIsScannerOpen(true);
+  }, []);
+
+  const handleScanSuccess = useCallback((decodedText: string) => {
+    const { booth, externalUrl } = parseBoothFromScan(decodedText);
+
+    if (scanTargetBooth && booth && booth.id !== scanTargetBooth.id) {
+      playErrorSound();
+      setToastMessage(
+        `Wrong Booth! You selected Booth ${scanTargetBooth.number} (${scanTargetBooth.title}), but scanned Booth ${booth.number} (${booth.title}). Please scan the QR code for Booth ${scanTargetBooth.number} to play.`
+      );
+      setTimeout(() => setToastMessage(null), 6000);
+      return;
     }
+
+    setIsScannerOpen(false);
+
+    if (booth) {
+      if (onSelectBooth) {
+        onSelectBooth(booth);
+      } else {
+        onStart();
+      }
+    } else if (externalUrl) {
+      window.location.href = externalUrl;
+    } else {
+      setToastMessage(
+        `Scanned: "${decodedText.length > 40 ? decodedText.slice(0, 40) + '...' : decodedText}". Not recognized as a summit booth challenge.`
+      );
+      setTimeout(() => setToastMessage(null), 4500);
+    }
+  }, [scanTargetBooth, onSelectBooth, onStart]);
+
+  const handleBoothClick = (booth: BoothConfig) => {
+    handleOpenScanner(booth);
   };
 
   return (
@@ -337,6 +374,22 @@ export function Welcome({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Live Camera QR Scanner Modal */}
+      <QRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={handleScanSuccess}
+        targetBooth={scanTargetBooth}
+      />
+
+      {/* Toast feedback */}
+      {toastMessage && (
+        <div className="ts-scanner-toast ts-scanner-toast--error" role="alert">
+          <span><AlertCircleIcon size={18} /></span>
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>
