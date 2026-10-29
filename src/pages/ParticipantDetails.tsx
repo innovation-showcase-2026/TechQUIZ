@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import type { Participant, BoothConfig, BoothResult } from '../types';
 import { Button } from '../components/Button';
-import { fetchParticipantFromFirestore } from '../services/firebaseService';
+import {
+  fetchParticipantFromFirestore,
+  saveParticipantRegistrationInFirestore,
+} from '../services/firebaseService';
 
 interface ParticipantDetailsProps {
   initialData: Partial<Participant> | null;
@@ -25,6 +28,7 @@ export function ParticipantDetails({
   const [email, setEmail] = useState(initialData?.email ?? (initialData as any)?.entId ?? '');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   function validate(): boolean {
     const e: FormErrors = {};
@@ -57,30 +61,44 @@ export function ParticipantDetails({
     const cleanEmail = email.trim().toLowerCase();
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      // Check if this attendee already has progress saved
-      const checkRes = await fetchParticipantFromFirestore(cleanEmail);
-      if (checkRes.exists && checkRes.participant) {
-        const participant: Participant = {
-          name: cleanName || checkRes.participant.name,
-          email: cleanEmail,
-          role: 'Summit Attendee',
-        };
-        onContinue(participant, checkRes.boothResults ?? {});
+      const existing = await fetchParticipantFromFirestore(cleanEmail);
+      if (existing.error) {
+        console.warn('[Registration] Unable to check existing attendee:', existing.error);
+        setSubmitError('We could not check your passport right now. Please check your connection and try again.');
         return;
       }
-    } catch {
-      // Proceed as new participant if network or record not found
+
+      const participant: Participant = {
+        name: cleanName || existing.participant?.name || '',
+        email: cleanEmail,
+        role: 'Summit Attendee',
+      };
+
+      // Reuse the existing record and restore its booth results across browsers.
+      // Only new participants need the separate registration write.
+      if (existing.exists) {
+        onContinue(participant, existing.boothResults ?? {});
+        return;
+      }
+
+      const saveRes = await saveParticipantRegistrationInFirestore(participant);
+      if (!saveRes.success) {
+        console.warn('[Registration] Unable to save attendee:', saveRes.error);
+        setSubmitError('We could not save your registration right now. Please check your connection and try again.');
+        return;
+      }
+
+      onContinue(participant);
+    } catch (error) {
+      console.warn('[Registration] Attendee registration failed:', error);
+      setSubmitError('We could not save your registration right now. Please check your connection and try again.');
+      return;
     } finally {
       setIsSubmitting(false);
     }
-
-    onContinue({
-      name: cleanName,
-      email: cleanEmail,
-      role: 'Summit Attendee',
-    });
   }
 
   return (
@@ -143,6 +161,8 @@ export function ParticipantDetails({
             />
             {errors.email && <span className="ts-field__error" role="alert">{errors.email}</span>}
           </div>
+
+          {submitError && <p className="ts-field__error" role="alert">{submitError}</p>}
 
           {/* Actions */}
           <div className="ts-form__actions">

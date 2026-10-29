@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 import type { Participant, BoothResult, BoothConfig } from '../types';
-import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
+import { BOOTHS, MAX_BOOTHS_PER_PARTICIPANT, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
 import { Button } from '../components/Button';
 import { QRScannerModal } from '../components/QRScannerModal';
 import { parseBoothFromScan, playErrorSound } from '../utils/qrHelper';
@@ -8,6 +8,7 @@ import { parseBoothFromScan, playErrorSound } from '../utils/qrHelper';
 interface PassportProps {
   participant: Participant | null;
   boothResults: Record<string, BoothResult>;
+  hasReachedBoothLimit: boolean;
   onBackToCurrent?: () => void;
   hasActiveQuiz?: boolean;
   onLaunchBooth?: (booth: BoothConfig) => void;
@@ -18,6 +19,7 @@ interface PassportProps {
 export function Passport({
   participant,
   boothResults,
+  hasReachedBoothLimit,
   onBackToCurrent,
   hasActiveQuiz,
   onLaunchBooth,
@@ -136,7 +138,7 @@ export function Passport({
 
             <p className="ts-qualification-desc">
               {isWinner
-                ? `Incredible achievement! You have completed ${completedCount} of 9 booth quizzes (requirement: at least 4). Present this digital pass at the Tech Summit helpdesk for your prize!`
+                ? `Incredible achievement! You have completed ${completedCount} booth quizzes. Present this digital pass at the Tech Summit helpdesk for your prize!`
                 : `You have completed ${completedCount} booth(s). Complete at least ${remainingToWin} more booth ${remainingToWin === 1 ? 'quiz' : 'quizzes'} to unlock official prize qualification.`}
             </p>
 
@@ -181,18 +183,25 @@ export function Passport({
         <div className="ts-booths-matrix-section">
           <div className="ts-matrix-header">
             <div>
-              <h2 className="ts-matrix-title">All 9 Summit Booths Status</h2>
-              <span className="ts-matrix-subtitle">Physical booth visits required: Scan each booth's standee QR code on-site to unlock</span>
+              <h2 className="ts-matrix-title">Summit Booth Status</h2>
+              <span className="ts-matrix-subtitle">Choose up to {MAX_BOOTHS_PER_PARTICIPANT} of {TOTAL_BOOTHS} booths. Scan a booth's standee QR code on-site to unlock its quiz.</span>
             </div>
             <button
               type="button"
               className="ts-passport-scan-qr-btn"
               onClick={() => handleOpenScanner(null)}
               title="Open camera to scan any booth QR code"
+              disabled={hasReachedBoothLimit}
             >
-              📷 Scan QR to Play
+              {hasReachedBoothLimit ? '✓ Booth limit reached' : '📷 Scan QR to Play'}
             </button>
           </div>
+
+          {hasReachedBoothLimit && (
+            <p className="ts-matrix-subtitle" role="status">
+              You have completed the maximum of {MAX_BOOTHS_PER_PARTICIPANT} booth quizzes.
+            </p>
+          )}
 
           <div className="ts-booths-grid">
             {BOOTHS.map((booth) => {
@@ -236,8 +245,9 @@ export function Passport({
                         className="ts-booth-scan-btn"
                         onClick={() => handleOpenScanner(booth)}
                         title={`Scan Booth ${booth.number} (${booth.title}) standee QR code to unlock quiz`}
+                        disabled={hasReachedBoothLimit}
                       >
-                        <span>📷 Scan Booth {booth.number} QR to Play</span>
+                        <span>{hasReachedBoothLimit ? 'Booth limit reached' : `📷 Scan Booth ${booth.number} QR to Play`}</span>
                       </button>
                     </div>
                   )}

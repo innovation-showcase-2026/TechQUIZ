@@ -65,6 +65,7 @@ export interface BoothConfig {
 }
 
 export interface QuizState {
+  participantEmail: string;
   boothId: string;
   boothNumber: number;
   boothTitle: string;

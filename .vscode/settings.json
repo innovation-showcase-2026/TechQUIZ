@@ -3,6 +3,7 @@
         "/^npm run build$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "npx vite": true
     }
 }

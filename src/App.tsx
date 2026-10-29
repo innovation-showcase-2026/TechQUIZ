@@ -1,18 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import type { AppStage, Participant, QuizState, QuizResult, BoothConfig, BoothResult, BoothTopic } from './types';
 import { Header } from './components/Header';
 import { Layout } from './components/Layout';
-import { Welcome } from './pages/Welcome';
-import { ParticipantDetails } from './pages/ParticipantDetails';
-import { TopicSelection } from './pages/TopicSelection';
-import { Quiz } from './pages/Quiz';
-import { Results } from './pages/Results';
-import { AlreadyPlayed } from './pages/AlreadyPlayed';
-import { Passport } from './pages/Passport';
 import { Button } from './components/Button';
-import { FirebaseStatusModal } from './components/FirebaseStatusModal';
+const Welcome = lazy(() => import('./pages/Welcome').then((module) => ({ default: module.Welcome })));
+const ParticipantDetails = lazy(() => import('./pages/ParticipantDetails').then((module) => ({ default: module.ParticipantDetails })));
+const TopicSelection = lazy(() => import('./pages/TopicSelection').then((module) => ({ default: module.TopicSelection })));
+const Quiz = lazy(() => import('./pages/Quiz').then((module) => ({ default: module.Quiz })));
+const Results = lazy(() => import('./pages/Results').then((module) => ({ default: module.Results })));
+const AlreadyPlayed = lazy(() => import('./pages/AlreadyPlayed').then((module) => ({ default: module.AlreadyPlayed })));
+const Passport = lazy(() => import('./pages/Passport').then((module) => ({ default: module.Passport })));
+const FirebaseStatusModal = lazy(() => import('./components/FirebaseStatusModal').then((module) => ({ default: module.FirebaseStatusModal })));
 import { prepareQuestions } from './utils/quiz';
-import { submitResult, registerParticipant } from './services/submissionService';
 import {
   getParticipant,
   saveParticipant,
@@ -20,22 +19,28 @@ import {
   saveQuizState,
   clearQuizState,
   getBoothResults,
+  migrateLegacyBoothResults,
   saveBoothResult,
   saveAllBoothResults,
-  getBoothResult,
-  hasPlayedBooth,
   resetAll,
   isTestMode,
   getBoothParamFromUrl,
 } from './utils/storage';
-import { fetchParticipantFromFirestore } from './services/firebaseService';
-import { getBoothById, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
+import { getBoothById, MAX_BOOTHS_PER_PARTICIPANT, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
 import { getRichQuestionsForBooth } from './utils/questionEngine';
 
 const QUESTION_COUNT = 5;
 
 async function fetchParticipantData(id: string) {
+  const { fetchParticipantFromFirestore } = await import('./services/firebaseService');
   return fetchParticipantFromFirestore(id);
+}
+
+function quizBelongsToParticipant(quiz: QuizState, participant: Participant | null): boolean {
+  return Boolean(
+    participant?.email &&
+    quiz.participantEmail.trim().toLowerCase() === participant.email.trim().toLowerCase(),
+  );
 }
 
 export default function App() {
@@ -53,16 +58,34 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (!participant?.email) return;
+
+    const retryPending = () => {
+      void import('./services/submissionService')
+        .then(({ retryPendingSubmissions }) => retryPendingSubmissions(participant.email))
+        .catch((error: unknown) => {
+          console.warn('[Submission] Unable to load pending submission sync:', error);
+        });
+    };
+    retryPending();
+    window.addEventListener('online', retryPending);
+    return () => window.removeEventListener('online', retryPending);
+  }, [participant?.email]);
+
   // Initialize and route based on URL and stored state
   useEffect(() => {
     setTestMode(isTestMode());
 
     const savedParticipant = getParticipant();
     if (savedParticipant) {
+      // Older builds kept one unscoped result cache. Only migrate it when this
+      // browser already has the participant identity that owned that cache.
+      migrateLegacyBoothResults(savedParticipant.email);
       setParticipant(savedParticipant);
     }
 
-    const savedResults = getBoothResults();
+    const savedResults = getBoothResults(savedParticipant?.email);
     setBoothResults(savedResults);
 
     // Check URL parameters for booth targeting
@@ -73,15 +96,21 @@ export default function App() {
       setTargetBooth(matchedBooth);
 
       // STRICT RESTRICTION: If already played, immediately display AlreadyPlayed screen with result!
-      if (hasPlayedBooth(matchedBooth.id)) {
-        setCurrentBoothResult(getBoothResult(matchedBooth.id));
+      if (savedResults[matchedBooth.id]) {
+        setCurrentBoothResult(savedResults[matchedBooth.id]);
         setStage('ALREADY_PLAYED');
         return;
       }
 
       // Check for unfinished saved quiz for THIS specific booth
       const savedQuiz = getQuizState();
-      if (savedQuiz && savedQuiz.boothId === matchedBooth.id && !savedQuiz.submitted) {
+      if (savedQuiz && !quizBelongsToParticipant(savedQuiz, savedParticipant)) {
+        clearQuizState();
+      } else if (savedQuiz && savedQuiz.boothId === matchedBooth.id && !savedQuiz.submitted) {
+        if (Object.keys(savedResults).length >= MAX_BOOTHS_PER_PARTICIPANT) {
+          setStage('PASSPORT');
+          return;
+        }
         setQuizState(savedQuiz);
         setStage('QUIZ');
         return;
@@ -92,23 +121,32 @@ export default function App() {
         const urlParams = new URLSearchParams(window.location.search);
         const paramEntId = urlParams.get('entId') || urlParams.get('uuid') || urlParams.get('id');
         if (paramEntId) {
-          fetchParticipantData(paramEntId).then((res: any) => {
+          fetchParticipantData(paramEntId).then((res) => {
+            if (res.error) {
+              console.warn('[Participant restore] Firebase lookup failed:', res.error);
+              setLoadError('We could not restore this passport from Firebase. Please check your connection and refresh to retry.');
+              return;
+            }
+
             if (res.exists && res.participant) {
               setParticipant(res.participant);
               saveParticipant(res.participant);
               if (res.boothResults) {
                 setBoothResults(res.boothResults);
-                saveAllBoothResults(res.boothResults);
+                saveAllBoothResults(res.boothResults, res.participant.email);
               }
               if (res.boothResults && res.boothResults[matchedBooth.id]) {
                 setCurrentBoothResult(res.boothResults[matchedBooth.id]);
                 setStage('ALREADY_PLAYED');
               } else {
-                startBoothQuiz(matchedBooth);
+                startBoothQuiz(matchedBooth, undefined, res.participant.email);
               }
             } else {
               setStage('PARTICIPANT');
             }
+          }).catch((error: unknown) => {
+            console.warn('[Participant restore] Firebase lookup failed:', error);
+            setLoadError('We could not restore this passport from Firebase. Please check your connection and refresh to retry.');
           });
           return;
         }
@@ -118,15 +156,21 @@ export default function App() {
       }
 
       // User registered and booth not yet played: start quiz directly!
-      startBoothQuiz(matchedBooth);
+      startBoothQuiz(matchedBooth, undefined, savedParticipant.email);
       return;
     }
 
     // Check for unfinished saved quiz (when no specific booth param in URL)
     const savedQuiz = getQuizState();
-    if (savedQuiz && savedQuiz.questions && savedQuiz.questions.length > 0) {
-      if (hasPlayedBooth(savedQuiz.boothId)) {
+    if (savedQuiz && !quizBelongsToParticipant(savedQuiz, savedParticipant)) {
+      clearQuizState();
+    } else if (savedQuiz && !savedQuiz.submitted && savedQuiz.questions.length > 0) {
+      if (savedResults[savedQuiz.boothId]) {
         clearQuizState();
+      } else if (Object.keys(savedResults).length >= MAX_BOOTHS_PER_PARTICIPANT) {
+        clearQuizState();
+        setStage('PASSPORT');
+        return;
       } else {
         setQuizState(savedQuiz);
         const b = getBoothById(savedQuiz.boothId);
@@ -146,17 +190,26 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const paramEntId = urlParams.get('entId') || urlParams.get('uuid') || urlParams.get('id');
     if (paramEntId && !savedParticipant) {
-      fetchParticipantData(paramEntId).then((res: any) => {
+      fetchParticipantData(paramEntId).then((res) => {
+        if (res.error) {
+          console.warn('[Participant restore] Firebase lookup failed:', res.error);
+          setLoadError('We could not restore this passport from Firebase. Please check your connection and refresh to retry.');
+          return;
+        }
+
         if (res.exists && res.participant) {
           setParticipant(res.participant);
           saveParticipant(res.participant);
           if (res.boothResults) {
             setBoothResults(res.boothResults);
-            saveAllBoothResults(res.boothResults);
+            saveAllBoothResults(res.boothResults, res.participant.email);
           }
           setStage('PASSPORT');
         }
         // else: stays at initial WELCOME stage — no explicit call needed
+      }).catch((error: unknown) => {
+        console.warn('[Participant restore] Firebase lookup failed:', error);
+        setLoadError('We could not restore this passport from Firebase. Please check your connection and refresh to retry.');
       });
       // Do NOT call setStage('WELCOME') here — it would flash WELCOME before async resolves
       return;
@@ -166,12 +219,25 @@ export default function App() {
     // (initial useState value is already 'WELCOME', so no explicit call needed)
   }, []);
 
-  const startBoothQuiz = useCallback((booth: BoothConfig, topic?: BoothTopic) => {
+  const startBoothQuiz = useCallback((booth: BoothConfig, topic?: BoothTopic, participantEmail = participant?.email) => {
+    if (!participantEmail) {
+      setTargetBooth(booth);
+      setStage('PARTICIPANT');
+      return;
+    }
+
+    const participantResults = getBoothResults(participantEmail);
+
     // Guard: Prevent starting any booth that has already been completed
-    if (hasPlayedBooth(booth.id)) {
-      setCurrentBoothResult(getBoothResult(booth.id));
+    if (participantResults[booth.id]) {
+      setCurrentBoothResult(participantResults[booth.id]);
       setTargetBooth(booth);
       setStage('ALREADY_PLAYED');
+      return;
+    }
+
+    if (Object.keys(participantResults).length >= MAX_BOOTHS_PER_PARTICIPANT) {
+      setStage('PASSPORT');
       return;
     }
 
@@ -181,6 +247,7 @@ export default function App() {
       const count = Math.min(QUESTION_COUNT, pool.length);
       const prepared = prepareQuestions(pool, count);
       const newQuiz: QuizState = {
+        participantEmail,
         boothId: booth.id,
         boothNumber: booth.number,
         boothTitle: booth.title,
@@ -200,7 +267,7 @@ export default function App() {
     } catch {
       setLoadError(`Unable to load questions for ${booth.title}. Please refresh.`);
     }
-  }, []);
+  }, [participant?.email]);
 
   const handleTopicSelect = useCallback((topic: BoothTopic) => {
     if (!targetBooth) return;
@@ -217,44 +284,57 @@ export default function App() {
 
   const handleParticipantRegister = useCallback(
     (p: Participant, restoredResults?: Record<string, BoothResult>) => {
+      const activeQuiz = getQuizState();
+      const identityChanged = Boolean(
+        participant?.email &&
+        participant.email.trim().toLowerCase() !== p.email.trim().toLowerCase(),
+      );
+      if (identityChanged || (activeQuiz && !quizBelongsToParticipant(activeQuiz, p))) {
+        clearQuizState();
+        setQuizState(null);
+      }
+      if (identityChanged) {
+        setResult(null);
+        setCurrentBoothResult(null);
+        setTargetBooth(null);
+      }
+
       setParticipant(p);
       saveParticipant(p);
+      const participantResults = {
+        ...getBoothResults(p.email),
+        ...(restoredResults ?? {}),
+      };
+      setBoothResults(participantResults);
 
       // restoredResults !== undefined means user was found in Firebase (even if they have 0 tests).
-      // Only call registerParticipant for truly NEW users (restoredResults is undefined).
       if (restoredResults !== undefined) {
         // Existing user — restore their booth results into browser cache
         if (Object.keys(restoredResults).length > 0) {
-          setBoothResults(restoredResults);
-          saveAllBoothResults(restoredResults);
+          saveAllBoothResults(participantResults, p.email);
           console.log(`[Passport Restore] Restored ${Object.keys(restoredResults).length} booth test(s) for ${p.entId}`);
         } else {
           console.log(`[Passport Restore] Existing user ${p.entId} found in Firebase — 0 tests to restore yet.`);
         }
-      } else {
-        // Truly new participant — push registration to Firebase Firestore
-        registerParticipant(p).catch((err) => {
-          console.warn('Registration sync error:', err);
-        });
       }
 
       // If the scanned booth was already completed (in restored results), show AlreadyPlayed
-      if (targetBooth && restoredResults && restoredResults[targetBooth.id]) {
+      if (!identityChanged && targetBooth && restoredResults && restoredResults[targetBooth.id]) {
         setCurrentBoothResult(restoredResults[targetBooth.id]);
         setStage('ALREADY_PLAYED');
         return;
       }
 
       // If there's a target booth (from QR scan) and it's not played yet, go straight to quiz!
-      if (targetBooth) {
-        startBoothQuiz(targetBooth);
+      if (targetBooth && !identityChanged) {
+        startBoothQuiz(targetBooth, undefined, p.email);
         return;
       }
 
       // No specific booth → show passport so attendee can scan any booth they want
       setStage('PASSPORT');
     },
-    [targetBooth],
+    [participant?.email, targetBooth, startBoothQuiz],
   );
 
   const handleAnswer = useCallback((questionIndex: number, answerIndex: number) => {
@@ -359,8 +439,8 @@ export default function App() {
         answers: answersList,
       };
 
-      saveBoothResult(newBoothResult);
-      const updatedBoothResults = getBoothResults();
+      saveBoothResult(newBoothResult, participant.email);
+      const updatedBoothResults = getBoothResults(participant.email);
       setBoothResults(updatedBoothResults);
       setCurrentBoothResult(newBoothResult);
 
@@ -368,7 +448,18 @@ export default function App() {
 
       // Submit to Firebase Firestore database
       try {
-        await submitResult(participant, persisted, computedResult, completedCount, updatedBoothResults);
+        const { submitResult } = await import('./services/submissionService');
+        await submitResult(participant, persisted, computedResult, completedCount, (status) => {
+          if (status === 'synced') {
+            setDownloadError(null);
+          } else if (status === 'sync-pending') {
+            setDownloadError('Saved on this device. Firebase sync is pending and will retry when the connection is available.');
+          } else if (status === 'local-save-failed') {
+            setDownloadError('This browser could not confirm local storage. Firebase sync is being attempted; keep this page open until it completes.');
+          } else {
+            setDownloadError('The submission could not be saved locally or confirmed by Firebase. Please keep this page open and retry your connection.');
+          }
+        });
       } catch {
         console.warn('Submission recording encountered an issue.');
       }
@@ -391,19 +482,25 @@ export default function App() {
 
   const handleLaunchBoothFromPassport = useCallback((booth: BoothConfig) => {
     setTargetBooth(booth);
-    if (hasPlayedBooth(booth.id)) {
-      setCurrentBoothResult(getBoothResult(booth.id));
-      setStage('ALREADY_PLAYED');
-      return;
-    }
-
     if (!participant) {
       setStage('PARTICIPANT');
       return;
     }
 
+    const participantResults = getBoothResults(participant.email);
+    if (participantResults[booth.id]) {
+      setCurrentBoothResult(participantResults[booth.id]);
+      setStage('ALREADY_PLAYED');
+      return;
+    }
+
+    if (Object.keys(participantResults).length >= MAX_BOOTHS_PER_PARTICIPANT) {
+      setStage('PASSPORT');
+      return;
+    }
+
     // Immediately start the booth quiz!
-    startBoothQuiz(booth);
+    startBoothQuiz(booth, undefined, participant.email);
   }, [participant, startBoothQuiz]);
 
   const handleOpenScannedUrl = useCallback((url: string) => {
@@ -424,6 +521,8 @@ export default function App() {
 
   const completedCount = Object.keys(boothResults).length;
   const isWinner = completedCount >= REQUIRED_BOOTHS_TO_WIN;
+  const savedQuiz = getQuizState();
+  const canResumeQuiz = Boolean(savedQuiz && !savedQuiz.submitted && quizBelongsToParticipant(savedQuiz, participant));
 
   return (
     <>
@@ -444,15 +543,22 @@ export default function App() {
           </div>
         )}
 
+        <Suspense fallback={<div className="ts-page"><p className="ts-page__description">Loading…</p></div>}>
         {!loadError && stage === 'WELCOME' && (
           <Welcome
             targetBooth={targetBooth}
             participant={participant}
             completedCount={completedCount}
             onStart={handleStartFromWelcome}
-            onResume={() => setStage('QUIZ')}
-            hasSavedQuiz={!!getQuizState()}
-            onOpenPassport={() => setStage('PASSPORT')}
+            onResume={() => {
+              const quiz = getQuizState();
+              if (!quiz || quiz.submitted || !quizBelongsToParticipant(quiz, participant)) return;
+              setQuizState(quiz);
+              setTargetBooth(getBoothById(quiz.boothId));
+              setStage('QUIZ');
+            }}
+            hasSavedQuiz={canResumeQuiz}
+            onOpenPassport={handleStartFromWelcome}
             onSelectBooth={handleLaunchBoothFromPassport}
           />
         )}
@@ -511,6 +617,7 @@ export default function App() {
           <Passport
             participant={participant}
             boothResults={boothResults}
+            hasReachedBoothLimit={completedCount >= MAX_BOOTHS_PER_PARTICIPANT}
             onBackToCurrent={quizState ? () => setStage('QUIZ') : undefined}
             hasActiveQuiz={Boolean(quizState)}
             onLaunchBooth={handleLaunchBoothFromPassport}
@@ -518,7 +625,7 @@ export default function App() {
             onEditProfile={() => setStage('PARTICIPANT')}
           />
         )}
-
+        </Suspense>
 
         {testMode && (
           <div className="ts-test-mode" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -531,12 +638,16 @@ export default function App() {
           </div>
         )}
 
-        <FirebaseStatusModal
-          isOpen={isFirebaseModalOpen}
-          onClose={() => setIsFirebaseModalOpen(false)}
-          currentEntId={participant?.entId}
-        />
-      </Layout>
+        <Suspense fallback={null}>
+          {isFirebaseModalOpen && (
+            <FirebaseStatusModal
+              isOpen={isFirebaseModalOpen}
+              onClose={() => setIsFirebaseModalOpen(false)}
+              currentParticipantEmail={participant?.email}
+            />
+          )}
+        </Suspense>
+        </Layout>
     </>
   );
 }

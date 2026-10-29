@@ -181,6 +181,7 @@ export const BOOTHS: BoothConfig[] = BOOTH_DEFINITIONS.map((def) => {
 });
 
 export const REQUIRED_BOOTHS_TO_WIN = 4;
+export const MAX_BOOTHS_PER_PARTICIPANT = 4;
 export const TOTAL_BOOTHS = 9;
 
 export function getBoothById(idOrNumber: string | number | null | undefined): BoothConfig | null {

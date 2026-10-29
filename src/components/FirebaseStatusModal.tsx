@@ -5,13 +5,13 @@ import { Button } from './Button';
 interface FirebaseStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentEntId?: string;
+  currentParticipantEmail?: string;
 }
 
 export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
   isOpen,
   onClose,
-  currentEntId,
+  currentParticipantEmail,
 }) => {
   const [status, setStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
@@ -62,7 +62,7 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
 
         <div className="ts-modal-body">
           <p className="ts-modal-desc">
-            All summit attendee registrations, quiz scores, and passport milestones are saved directly to Firebase Firestore collections.
+            Registration is saved as one participant document, and each completed booth is saved as one booth document. Registration and booth progress are also cached on this device.
           </p>
 
           <div className="ts-sync-destination-card">
@@ -74,15 +74,13 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
             <div className="ts-sync-dest-summary">
               <span className="ts-sync-summary-title">Active Firestore Collections:</span>
               <div className="ts-sync-chips">
-                <span className="ts-chip">📁 participants/{'{entId}'}</span>
-                <span className="ts-chip">📁 participants/{'{entId}'}/booths/{'{boothNum}'}</span>
-                <span className="ts-chip">📁 submissions/{'{submissionId}'}</span>
+                <span className="ts-chip">📁 participants/{'{email}'} + booths/{'{boothNum}'}</span>
               </div>
             </div>
 
-            {currentEntId && (
+            {currentParticipantEmail && (
               <div style={{ marginTop: '8px', fontSize: '12.5px', color: 'var(--success)' }}>
-                Active Session Document: <strong>participants/{currentEntId.toUpperCase()}</strong>
+                Active Passport Records: <strong>participants/{currentParticipantEmail.toLowerCase()}/booths/*</strong>
               </div>
             )}
           </div>

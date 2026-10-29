@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { BoothConfig, Participant } from '../types';
 import { Button } from '../components/Button';
-import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
+import { BOOTHS, MAX_BOOTHS_PER_PARTICIPANT, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
 
 interface WelcomeProps {
   targetBooth: BoothConfig | null;
@@ -25,10 +25,54 @@ export function Welcome({
   onSelectBooth,
 }: WelcomeProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const modalCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
   const isWinner = completedCount >= REQUIRED_BOOTHS_TO_WIN;
 
+  useEffect(() => {
+    if (!showInfoModal) return;
+
+    previouslyFocusedElementRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    modalCloseButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setShowInfoModal(false);
+        return;
+      }
+
+      if (event.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        event.preventDefault();
+      } else if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocusedElementRef.current?.focus();
+    };
+  }, [showInfoModal]);
+
   const handleBoothClick = (booth: BoothConfig) => {
-    if (participant && onSelectBooth) {
+    if (onSelectBooth) {
       onSelectBooth(booth);
     } else {
       onStart();
@@ -48,7 +92,7 @@ export function Welcome({
             </span>
             <h1 className="ts-hero-title">Ideas become <span>impact.</span></h1>
             <p className="ts-hero-description">
-              Explore nine technology showcases, take on exciting challenges, and earn your
+              Explore nine technology showcases, take on up to four challenges, and earn your
               spot on the leaderboard!
             </p>
             <div className="ts-hero-journey">
@@ -176,7 +220,8 @@ export function Welcome({
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleBoothClick(b);
+                if (e.key === ' ') e.preventDefault();
+                if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) handleBoothClick(b);
               }}
             >
               <div className="ts-showcase-booth-card__top">
@@ -189,7 +234,9 @@ export function Welcome({
 
               <div className="ts-showcase-booth-card__footer">
                 <span className="ts-showcase-booth-card__action">
-                  {participant ? 'Start Quiz' : 'Register & Play'} <span aria-hidden="true">›</span>
+                  {participant
+                    ? completedCount >= MAX_BOOTHS_PER_PARTICIPANT ? 'Limit reached' : 'Start Quiz'
+                    : 'Register & Play'} <span aria-hidden="true">›</span>
                 </span>
                 <span className="ts-showcase-booth-card__arrow" aria-hidden="true">›</span>
               </div>
@@ -218,7 +265,7 @@ export function Welcome({
       </div>
 
       <p className="ts-page__footer">
-        Scan physical QR codes at each booth or launch directly above. Scores synchronize in real-time with Firebase Firestore.
+        Scan a booth QR code or launch a quiz above. Registration and completed quiz results sync to Firebase Firestore and are cached on this device.
       </p>
 
       <nav className="ts-mobile-nav" aria-label="Showcase navigation">
@@ -241,17 +288,25 @@ export function Welcome({
 
       {/* Info Dialog Modal */}
       {showInfoModal && (
-        <div className="ts-modal-overlay" onClick={() => setShowInfoModal(false)} role="dialog" aria-modal="true">
-          <div className="ts-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="ts-modal-overlay" onClick={() => setShowInfoModal(false)}>
+          <div
+            ref={modalRef}
+            className="ts-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="welcome-guidelines-title"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="ts-modal-header">
               <div className="ts-modal-header__brand">
                 <div className="ts-modal-header__icon-badge" aria-hidden="true">💡</div>
                 <div>
                   <div className="ts-modal-eyebrow">CHALLENGE GUIDELINES</div>
-                  <h2 className="ts-modal-title">Innovation Showcase 2026</h2>
+                  <h2 id="welcome-guidelines-title" className="ts-modal-title">Innovation Showcase 2026</h2>
                 </div>
               </div>
               <button
+                ref={modalCloseButtonRef}
                 type="button"
                 className="ts-modal-close-btn"
                 onClick={() => setShowInfoModal(false)}
@@ -286,10 +341,10 @@ export function Welcome({
                   Interactive 9-Booth Rules:
                 </h4>
                 <ul style={{ paddingLeft: '18px', color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '14px' }}>
-                  <li>Participate in quizzes across 9 core architectural and emerging technology booths.</li>
+                  <li>Choose up to 4 quizzes from the 9 core architectural and emerging technology booths.</li>
                   <li>Each booth quiz has 5 targeted questions with a rapid 60-second timer.</li>
-                  <li>Complete at least <strong>4 booths</strong> to qualify for the official Summit Winner Prize!</li>
-                  <li>All registrations and attempts persist directly to Firebase Firestore.</li>
+                  <li>Complete <strong>4 booths</strong> to qualify for the official Summit Winner Prize. Each participant can play a maximum of 4 booths.</li>
+                  <li>Registration and completed quiz attempts sync to Firebase Firestore and are cached on this device.</li>
                 </ul>
               </div>
 
