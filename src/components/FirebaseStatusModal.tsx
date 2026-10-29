@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { testFirestoreConnection } from '../services/firebaseService';
 import { Button } from './Button';
 import { ServerIcon, CloseIcon, ZapIcon } from './Icons';
@@ -17,6 +18,15 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
   const [status, setStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
   const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -38,7 +48,7 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <div className="ts-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="ts-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="ts-modal-header">
@@ -120,4 +130,8 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 };

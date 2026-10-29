@@ -125,13 +125,13 @@ export function Passport({
               {isWinner ? 'Summit Prize Qualifier & Winner!' : 'Challenge in progress'}
             </h2>
             <span className="ts-qualification-pill">
-              {isWinner ? 'Winner' : `${completedCount} of ${REQUIRED_BOOTHS_TO_WIN} to win`}
+              {isWinner ? 'Target Reached & Winner!' : `${completedCount} of ${REQUIRED_BOOTHS_TO_WIN} to win`}
             </span>
           </div>
 
           <p className="ts-qualification-desc">
             {isWinner
-              ? `Incredible achievement! You have completed ${completedCount} booth quizzes. Present this pass at the Summit helpdesk for your prize!`
+              ? `Incredible achievement! You have completed ${completedCount} booth quizzes and reached the official target. Present this pass at the Summit helpdesk for your prize!`
               : `Complete ${remainingToWin} more booth ${remainingToWin === 1 ? 'quiz' : 'quizzes'} to unlock official prize qualification.`}
           </p>
 
@@ -144,7 +144,7 @@ export function Passport({
             </div>
             <div className="ts-passport-progress-labels">
               <span>{completedCount} played</span>
-              <span>Goal: {REQUIRED_BOOTHS_TO_WIN} quizzes</span>
+              <span>Goal: {REQUIRED_BOOTHS_TO_WIN} quizzes {isWinner ? '(Target Reached!)' : ''}</span>
               <span>Max: {TOTAL_BOOTHS} booths</span>
             </div>
           </div>
@@ -152,9 +152,9 @@ export function Passport({
 
         {/* 3. Stats: ONE .glass card with a 2x2 grid & hairline dividers */}
         <div className="ts-passport-stats-grid">
-          <div className="ts-stat-cell ts-stat-cell--tl">
+          <div className={`ts-stat-cell ts-stat-cell--tl ${isWinner ? 'ts-stat-cell--winner' : ''}`}>
             <span className="ts-stat-card__number">{completedCount}/{TOTAL_BOOTHS}</span>
-            <span className="ts-stat-card__label">BOOTHS PLAYED</span>
+            <span className="ts-stat-card__label">{isWinner ? 'TARGET ACHIEVED' : 'BOOTHS PLAYED'}</span>
           </div>
           <div className="ts-stat-cell ts-stat-cell--tr">
             <span className="ts-stat-card__number">{stats.totalScore}/{stats.totalQuestions}</span>
@@ -179,12 +179,12 @@ export function Passport({
             </div>
             <button
               type="button"
-              className="ts-passport-scan-qr-btn"
+              className={`ts-passport-scan-qr-btn ${hasReachedBoothLimit ? 'ts-passport-scan-qr-btn--limit' : ''}`}
               onClick={() => handleOpenScanner(null)}
               title="Open camera to scan any booth QR code"
               disabled={hasReachedBoothLimit}
             >
-              <span>{hasReachedBoothLimit ? 'Limit reached' : 'Scan QR'}</span>
+              <span>{hasReachedBoothLimit ? 'Target reached' : 'Scan QR'}</span>
             </button>
           </div>
 

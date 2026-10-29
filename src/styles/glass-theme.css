@@ -1777,23 +1777,33 @@ button, .ts-btn, .ts-hero-primary-btn, .ts-showcase-booth-card, .ts-booth-card, 
    ========================================================= */
 .ts-modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(5, 8, 20, 0.75);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  z-index: 100;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: rgba(8, 12, 28, 0.68);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: 9990;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .ts-modal-card {
+  position: relative;
   width: 100%;
   max-width: 520px;
-  max-height: 85vh;
+  max-height: min(85vh, 800px);
   overflow-y: auto;
   padding: 24px;
+  margin: auto;
+  box-sizing: border-box;
 }
 
 .ts-modal-header {
@@ -1903,7 +1913,7 @@ button, .ts-btn, .ts-hero-primary-btn, .ts-showcase-booth-card, .ts-booth-card, 
    ========================================================= */
 @media (prefers-reduced-motion: no-preference) {
   .ts-page {
-    animation: ts-fade-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: ts-fade-in 260ms ease both;
   }
 
   .ts-hero-card {
@@ -1918,6 +1928,15 @@ button, .ts-btn, .ts-hero-primary-btn, .ts-showcase-booth-card, .ts-booth-card, 
     animation: ts-fade-up 320ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  @keyframes ts-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   @keyframes ts-fade-up {
     from {
       opacity: 0;
@@ -1925,7 +1944,7 @@ button, .ts-btn, .ts-hero-primary-btn, .ts-showcase-booth-card, .ts-booth-card, 
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 }
@@ -2010,7 +2029,59 @@ html, body {
 .ts-info-card__label, .ts-stat-card__label { color: var(--ink2); }
 
 .ts-qualification-banner--progress, .ts-score-card, .ts-milestone-card--progress { background: linear-gradient(135deg, rgba(255,255,255,.66), rgba(238,233,255,.48)); border-color: rgba(255,255,255,.9); }
-.ts-qualification-banner--winner, .ts-milestone-card--winner { background: linear-gradient(135deg, rgba(255,207,152,.6), rgba(255,154,196,.42)); border-color: rgba(255,123,154,.7); }
+
+/* TARGET REACHED: Celebratory green background */
+.ts-qualification-banner--winner, .ts-milestone-card--winner {
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.92) 0%, rgba(167, 243, 208, 0.8) 55%, rgba(110, 231, 183, 0.68) 100%) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.85) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.95), 0 14px 36px rgba(16, 185, 129, 0.22) !important;
+}
+.ts-qualification-banner--winner .ts-qualification-title,
+.ts-milestone-card--winner .ts-milestone-title { color: #064e3b !important; }
+.ts-qualification-banner--winner .ts-qualification-desc,
+.ts-milestone-card--winner .ts-milestone-desc { color: #047857 !important; }
+.ts-qualification-banner--winner .ts-qualification-pill {
+  background: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(5, 150, 105, 0.5) !important;
+  color: #065f46 !important;
+  font-weight: 800 !important;
+}
+.ts-milestone-card--winner .ts-milestone-icon {
+  color: #059669 !important;
+  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.35));
+}
+.ts-qualification-banner--winner .ts-passport-progress-bar { background: rgba(16, 185, 129, 0.18) !important; }
+.ts-qualification-banner--winner .ts-passport-progress-fill {
+  background: linear-gradient(90deg, #10b981, #059669) !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.5) !important;
+}
+.ts-qualification-banner--winner .ts-passport-progress-labels { color: #065f46 !important; }
+
+/* Target reached on Welcome page */
+.ts-info-card--target-reached {
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.92), rgba(167, 243, 208, 0.8)) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.85) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.95), 0 12px 28px rgba(16, 185, 129, 0.2) !important;
+}
+.ts-info-card--target-reached .ts-info-card__value { color: #064e3b !important; }
+.ts-info-card--target-reached .ts-info-card__label { color: #047857 !important; font-weight: 800 !important; }
+
+.ts-hero-passport-link--winner {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border: 1px solid rgba(52, 211, 153, 0.6) !important;
+  color: #065f46 !important;
+  padding: 6px 14px !important;
+  border-radius: var(--r-pill) !important;
+  font-weight: 700 !important;
+}
+.ts-stat-cell--winner .ts-stat-card__number { color: #059669 !important; }
+.ts-stat-cell--winner .ts-stat-card__label { color: #047857 !important; font-weight: 800 !important; }
+.ts-passport-scan-qr-btn--limit {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #065f46 !important;
+  opacity: 0.9;
+}
 .ts-qualification-title, .ts-milestone-title { color: var(--ink); }
 .ts-qualification-desc { color: var(--ink2); }
 .ts-passport-progress-bar, .ts-progress-bar { background: var(--trk); }
@@ -2052,29 +2123,40 @@ html, body {
 /* Scanner overlay */
 .ts-scanner-backdrop {
   position: fixed;
-  inset: 0;
-  z-index: 200;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: rgba(42, 50, 91, .26);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(12, 16, 36, 0.72);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
   animation: ts-overlay-in 220ms ease both;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .ts-scanner-modal {
   position: relative;
   width: min(100%, 520px);
-  max-height: min(860px, calc(100dvh - 40px));
-  overflow: auto;
+  max-height: min(860px, calc(100dvh - 32px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: auto;
   padding: 22px;
-  background: linear-gradient(145deg, rgba(255,255,255,.9), rgba(246,239,255,.76));
+  background: linear-gradient(145deg, rgba(255,255,255,.95), rgba(246,239,255,.88));
   border: 1px solid rgba(255,255,255,.95);
   border-radius: 28px;
-  box-shadow: 0 26px 80px rgba(52, 61, 112, .25), inset 0 1px 0 rgba(255,255,255,.95);
+  box-shadow: 0 26px 80px rgba(15, 23, 42, .4), inset 0 1px 0 rgba(255,255,255,.95);
   animation: ts-modal-in 280ms cubic-bezier(.16,1,.3,1) both;
+  box-sizing: border-box;
 }
 
 .ts-scanner-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
@@ -2185,7 +2267,19 @@ html, body {
 .ts-topics-badge, .ts-quiz-booth-pill, .ts-results-booth-pill, .ts-restriction-badge { color: var(--gold); }
 
 .ts-qualification-banner--progress, .ts-score-card, .ts-milestone-card--progress { background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.05)); border-color: rgba(255,255,255,.25); }
-.ts-qualification-banner--winner, .ts-milestone-card--winner { background: linear-gradient(135deg, rgba(255,168,95,.18), rgba(255,54,125,.2)); border-color: rgba(255,145,171,.62); }
+.ts-qualification-banner--winner, .ts-milestone-card--winner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.2) 55%, rgba(6, 78, 59, 0.35) 100%) !important;
+  border-color: rgba(52, 211, 153, 0.7) !important;
+}
+.ts-qualification-banner--winner .ts-qualification-title,
+.ts-milestone-card--winner .ts-milestone-title { color: #6ee7b7 !important; }
+.ts-qualification-banner--winner .ts-qualification-desc,
+.ts-milestone-card--winner .ts-milestone-desc { color: #a7f3d0 !important; }
+.ts-qualification-banner--winner .ts-qualification-pill {
+  background: rgba(16, 185, 129, 0.28) !important;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #6ee7b7 !important;
+}
 .ts-qualification-desc { color: var(--ink2); }
 .ts-pill-todo { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: var(--ink2); }
 .ts-pill-done { color: var(--ok); background: var(--okbg); border-color: var(--okbd); }

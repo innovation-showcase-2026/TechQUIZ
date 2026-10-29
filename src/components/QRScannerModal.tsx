@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { playScanSound, playErrorSound, parseBoothFromScan } from '../utils/qrHelper';
 import type { BoothConfig } from '../types';
@@ -85,6 +86,16 @@ export function QRScannerModal({
     },
     [hasScanned, targetBooth, stopCamera, onScanSuccess]
   );
+
+  // Prevent background scrolling while scanner modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
 
   // Initialize and start scanner when open
   useEffect(() => {
@@ -266,7 +277,7 @@ export function QRScannerModal({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="ts-scanner-backdrop" onClick={handleClose}>
       <div
         className="ts-scanner-modal"
@@ -427,4 +438,8 @@ export function QRScannerModal({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }

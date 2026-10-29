@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { BoothConfig, Participant } from '../types';
 import { Button } from '../components/Button';
 import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
@@ -39,12 +40,17 @@ export function Welcome({
   const [scanTargetBooth, setScanTargetBooth] = useState<BoothConfig | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const isTargetReached = completedCount >= REQUIRED_BOOTHS_TO_WIN;
+
   const modalRef = useRef<HTMLDivElement>(null);
   const modalCloseButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!showInfoModal) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     previouslyFocusedElementRef.current = document.activeElement instanceof HTMLElement
       ? document.activeElement
@@ -79,6 +85,7 @@ export function Welcome({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => {
+      document.body.style.overflow = prevOverflow;
       document.removeEventListener('keydown', handleKeyDown);
       previouslyFocusedElementRef.current?.focus();
     };
@@ -205,8 +212,14 @@ export function Welcome({
             </button>
 
             {participant ? (
-              <button type="button" className="ts-hero-passport-link" onClick={onOpenPassport}>
-                Passport progress ({completedCount}/{REQUIRED_BOOTHS_TO_WIN})
+              <button
+                type="button"
+                className={`ts-hero-passport-link ${isTargetReached ? 'ts-hero-passport-link--winner' : ''}`}
+                onClick={onOpenPassport}
+              >
+                {isTargetReached
+                  ? `🏆 Target Reached! (${completedCount}/${REQUIRED_BOOTHS_TO_WIN}) View Passport`
+                  : `Passport progress (${completedCount}/${REQUIRED_BOOTHS_TO_WIN})`}
               </button>
             ) : (
               <button
@@ -226,9 +239,9 @@ export function Welcome({
           <span className="ts-info-card__value">{TOTAL_BOOTHS}</span>
           <span className="ts-info-card__label">BOOTHS</span>
         </div>
-        <div className="ts-info-card">
-          <span className="ts-info-card__value">{REQUIRED_BOOTHS_TO_WIN}</span>
-          <span className="ts-info-card__label">TO WIN</span>
+        <div className={`ts-info-card ${isTargetReached ? 'ts-info-card--target-reached' : ''}`}>
+          <span className="ts-info-card__value">{isTargetReached ? '✓ 4' : REQUIRED_BOOTHS_TO_WIN}</span>
+          <span className="ts-info-card__label">{isTargetReached ? 'TARGET REACHED' : 'TO WIN'}</span>
         </div>
         <div className="ts-info-card">
           <span className="ts-info-card__value">60s</span>
@@ -306,7 +319,7 @@ export function Welcome({
       />
 
       {/* Info Dialog Modal */}
-      {showInfoModal && (
+      {showInfoModal && typeof document !== 'undefined' && createPortal(
         <div className="ts-modal-overlay" onClick={() => setShowInfoModal(false)}>
           <div
             ref={modalRef}
@@ -374,7 +387,8 @@ export function Welcome({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Live Camera QR Scanner Modal */}
