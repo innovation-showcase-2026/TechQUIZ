@@ -5436,3 +5436,212 @@ p, label { color: var(--glass-muted); }
   .ts-page--welcome .ts-showcase-booth-card__title { font-size: 11px; }
   .ts-page--welcome .ts-showcase-booth-card__desc { font-size: 9.5px; }
 }
+
+/* App canvas on larger displays. The welcome screen must keep its phone rhythm
+   instead of stretching a mobile hero into a desktop marketing banner. */
+@media (min-width: 701px) {
+  .ts-layout--wide {
+    width: 100%;
+    min-height: 100dvh;
+    padding: 18px 16px 96px;
+    align-items: flex-start;
+  }
+
+  .ts-layout--wide .ts-layout__main {
+    width: min(100%, 462px) !important;
+    max-width: 462px !important;
+    margin: 0 auto;
+  }
+
+  .ts-layout--wide .ts-event-banner {
+    height: 62px;
+    margin: 0 0 10px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .ts-layout--wide .ts-event-banner__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .ts-page--welcome .ts-hero-card {
+    min-height: 0;
+    margin-bottom: 10px;
+    border-radius: 25px;
+    background:
+      radial-gradient(ellipse at 92% 4%, rgba(92, 181, 205, .28), transparent 52%),
+      radial-gradient(ellipse at 94% 100%, rgba(235, 150, 61, .17), transparent 48%),
+      linear-gradient(140deg, rgba(30, 54, 80, .66), rgba(15, 28, 48, .58));
+    backdrop-filter: blur(30px) saturate(175%);
+    -webkit-backdrop-filter: blur(30px) saturate(175%);
+  }
+
+  .ts-page--welcome .ts-hero-content {
+    display: block;
+    min-height: 0;
+    padding: 20px 18px 16px;
+  }
+
+  .ts-page--welcome .ts-hero-art {
+    position: absolute;
+    top: -10px;
+    right: -40px;
+    z-index: 0;
+    width: 62%;
+    max-width: 255px;
+    opacity: .44;
+    pointer-events: none;
+  }
+
+  .ts-page--welcome .ts-hero-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 77%;
+  }
+
+  .ts-page--welcome .ts-hero-eyebrow {
+    margin-bottom: 6px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+  }
+
+  .ts-page--welcome .ts-hero-title {
+    max-width: 300px;
+    margin-bottom: 7px;
+    font-size: 36px;
+    line-height: .98;
+  }
+
+  .ts-page--welcome .ts-hero-description {
+    max-width: 285px;
+    font-size: 12px;
+    line-height: 1.42;
+  }
+
+  .ts-page--welcome .ts-hero-journey { display: none; }
+
+  .ts-page--welcome .ts-hero-cta-group {
+    position: relative;
+    z-index: 1;
+    align-items: stretch;
+    width: 100%;
+    max-width: none;
+    gap: 2px;
+    margin-top: 17px;
+  }
+
+  .ts-page--welcome .ts-hero-primary-btn {
+    min-height: 46px;
+    padding: 9px 14px;
+    border-radius: 15px;
+    font-size: 13px;
+  }
+
+  .ts-page--welcome .ts-hero-rules-link {
+    min-height: 28px;
+    font-size: 10px;
+  }
+
+  .ts-page--welcome .ts-info-cards {
+    gap: 7px;
+    margin-bottom: 20px;
+  }
+
+  .ts-page--welcome .ts-info-card {
+    min-height: 72px;
+    gap: 0;
+    padding: 7px 3px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, rgba(207,226,249,.14), rgba(207,226,249,.055));
+  }
+
+  .ts-page--welcome .ts-info-card__icon { font-size: 16px; }
+  .ts-page--welcome .ts-info-card__value { font-size: 22px; line-height: 1.05; }
+  .ts-page--welcome .ts-info-card__label { font-size: 8px; letter-spacing: .55px; }
+
+  .ts-page--welcome .ts-showcase-section { margin-bottom: 14px; }
+  .ts-page--welcome .ts-showcase-section__header { margin-bottom: 10px; }
+  .ts-page--welcome .ts-showcase-section__title { font-size: 21px; }
+  .ts-page--welcome .ts-showcase-section__desc { font-size: 11px; line-height: 1.38; }
+  .ts-page--welcome .ts-showcase-booths-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .ts-page--welcome .ts-showcase-booth-card {
+    min-height: 158px;
+    padding: 11px 10px 9px;
+    border-radius: 17px;
+  }
+
+  .ts-page--welcome .ts-showcase-booth-card__top { gap: 7px; margin-bottom: 5px; }
+  .ts-page--welcome .ts-showcase-booth-card__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+    font-size: 17px;
+  }
+  .ts-page--welcome .ts-showcase-booth-card__num { font-size: 11px; }
+  .ts-page--welcome .ts-showcase-booth-card__title { margin-bottom: 3px; font-size: 12px; line-height: 1.25; }
+  .ts-page--welcome .ts-showcase-booth-card__desc { margin-bottom: 5px; font-size: 10px; line-height: 1.3; }
+  .ts-page--welcome .ts-showcase-booth-card__footer { padding-top: 5px; }
+  .ts-page--welcome .ts-showcase-booth-card__action { min-height: 27px; padding: 3px 8px; font-size: 9px; }
+  .ts-page--welcome .ts-showcase-booth-card__arrow { width: 25px; height: 25px; font-size: 17px; }
+
+  .ts-page--welcome .ts-mobile-nav {
+    position: fixed;
+    right: auto;
+    bottom: 14px;
+    left: 50%;
+    z-index: 120;
+    display: grid;
+    width: min(446px, calc(100% - 28px));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-height: 59px;
+    padding: 5px 7px;
+    transform: translateX(-50%);
+    border: 1px solid rgba(235,245,255,.24);
+    border-radius: 20px;
+    background: linear-gradient(130deg, rgba(30,52,78,.82), rgba(18,31,50,.76));
+    box-shadow: 0 16px 38px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.22);
+    backdrop-filter: blur(30px) saturate(185%);
+    -webkit-backdrop-filter: blur(30px) saturate(185%);
+  }
+
+  .ts-page--welcome .ts-mobile-nav__item {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: 0;
+    border-radius: 14px;
+    color: #c1cede;
+    background: transparent;
+    font-family: var(--font-sans);
+    cursor: pointer;
+  }
+
+  .ts-page--welcome .ts-mobile-nav__item > span {
+    display: inline-flex;
+    min-height: 22px;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .ts-page--welcome .ts-mobile-nav__item small {
+    font-size: 9px;
+    font-weight: 650;
+    line-height: 1.2;
+  }
+
+  .ts-page--welcome .ts-mobile-nav__item--active { color: #ffd18a; }
+  .ts-page--welcome .ts-mobile-nav__item--active::after { background: linear-gradient(90deg, #ec3c4c, #ffbd58); }
+}
