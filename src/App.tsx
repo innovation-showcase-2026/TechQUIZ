@@ -28,7 +28,7 @@ import {
   getBoothParamFromUrl,
 } from './utils/storage';
 import { getBoothById, MAX_BOOTHS_PER_PARTICIPANT, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
-import { getRichQuestionsForBooth } from './utils/questionEngine';
+import { loadBoothQuestions } from './utils/questionEngine';
 
 const QUESTION_COUNT = 5;
 
@@ -42,6 +42,18 @@ function quizBelongsToParticipant(quiz: QuizState, participant: Participant | nu
     participant?.email &&
     quiz.participantEmail.trim().toLowerCase() === participant.email.trim().toLowerCase(),
   );
+}
+
+const FUN_GAMES = new Set([
+  'memory_missing', 'grid_tap', 'odd_one', 'pair_match',
+  'sequence', 'timer_stop', 'luck_pick', 'sort_bucket',
+  'pattern_quiz', 'crowd_judge'
+]);
+
+function isStaleQuiz(sq: QuizState): boolean {
+  const games = sq.questions.filter(q => q.itemType === 'game');
+  const mcqs = sq.questions.filter(q => q.itemType !== 'game');
+  return mcqs.length !== 3 || games.length !== 2 || games.some(g => !FUN_GAMES.has(g.gameType as string));
 }
 
 export default function App() {
@@ -79,6 +91,18 @@ export default function App() {
   useEffect(() => {
     setTestMode(isTestMode());
 
+    // Auto-purge any stale in-progress quiz session from previous app versions
+    const APP_BUILD_VERSION = '2026.10.31.v3_emoji_games';
+    try {
+      const storedVersion = localStorage.getItem('tech_quiz_app_version');
+      if (storedVersion !== APP_BUILD_VERSION) {
+        clearQuizState();
+        localStorage.setItem('tech_quiz_app_version', APP_BUILD_VERSION);
+      }
+    } catch {
+      // LocalStorage safety
+    }
+
     const savedParticipant = getParticipant();
     if (savedParticipant) {
       // Older builds kept one unscoped result cache. Only migrate it when this
@@ -106,7 +130,7 @@ export default function App() {
 
       // Check for unfinished saved quiz for THIS specific booth
       const savedQuiz = getQuizState();
-      if (savedQuiz && !quizBelongsToParticipant(savedQuiz, savedParticipant)) {
+      if (savedQuiz && (!quizBelongsToParticipant(savedQuiz, savedParticipant) || isStaleQuiz(savedQuiz))) {
         clearQuizState();
       } else if (savedQuiz && savedQuiz.boothId === matchedBooth.id && !savedQuiz.submitted) {
         if (Object.keys(savedResults).length >= MAX_BOOTHS_PER_PARTICIPANT) {
@@ -164,7 +188,7 @@ export default function App() {
 
     // Check for unfinished saved quiz (when no specific booth param in URL)
     const savedQuiz = getQuizState();
-    if (savedQuiz && !quizBelongsToParticipant(savedQuiz, savedParticipant)) {
+    if (savedQuiz && (!quizBelongsToParticipant(savedQuiz, savedParticipant) || isStaleQuiz(savedQuiz))) {
       clearQuizState();
     } else if (savedQuiz && !savedQuiz.submitted && savedQuiz.questions.length > 0) {
       if (savedResults[savedQuiz.boothId]) {
@@ -221,7 +245,7 @@ export default function App() {
     // (initial useState value is already 'WELCOME', so no explicit call needed)
   }, []);
 
-  const startBoothQuiz = useCallback((booth: BoothConfig, topic?: BoothTopic, participantEmail = participant?.email) => {
+  const startBoothQuiz = useCallback(async (booth: BoothConfig, topic?: BoothTopic, participantEmail = participant?.email) => {
     if (!participantEmail) {
       setTargetBooth(booth);
       setStage('PARTICIPANT');
@@ -244,7 +268,8 @@ export default function App() {
     }
 
     try {
-      const dynamicPool = getRichQuestionsForBooth(booth.id, 50);
+      // Dynamic non-repeating draw across 1,000+ players (2,000 MCQs + 3,000 Games)
+      const dynamicPool = await loadBoothQuestions(booth.id, participantEmail);
       const pool = dynamicPool.length > 0 ? dynamicPool : (topic?.questions && topic.questions.length > 0 ? topic.questions : booth.questions);
       const count = Math.min(QUESTION_COUNT, pool.length);
       const prepared = prepareQuestions(pool, count);
@@ -374,9 +399,10 @@ export default function App() {
     let unanswered = 0;
     qs.questions.forEach((q, idx) => {
       const sel = qs.answers[idx];
+      const targetCorrect = q.correctAnswer !== undefined ? q.correctAnswer : (q.gameData?.bugLineIndex ?? 0);
       if (sel === null || sel === undefined) {
         unanswered++;
-      } else if (sel === q.correctAnswer) {
+      } else if (sel === targetCorrect) {
         correct++;
       } else {
         incorrect++;
@@ -384,7 +410,7 @@ export default function App() {
     });
 
     const endTime = qs.endTime ?? Date.now();
-    const timeTaken = Math.min(60, Math.floor((endTime - qs.startTime) / 1000));
+    const timeTaken = Math.min(90, Math.floor((endTime - qs.startTime) / 1000));
     const total = qs.questions.length;
     const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
 
@@ -426,8 +452,8 @@ export default function App() {
       // Save booth result to local multi-booth store
       const answersList = persisted.questions.map((q, idx) => ({
         questionId: q.id,
-        selectedAnswer: persisted.answers[idx] !== null && persisted.answers[idx] !== undefined ? q.options[persisted.answers[idx]!] : null,
-        correct: persisted.answers[idx] === q.correctAnswer,
+        selectedAnswer: persisted.answers[idx] !== null && persisted.answers[idx] !== undefined ? (q.options ? q.options[persisted.answers[idx]!] : `Line ${persisted.answers[idx]! + 1}`) : null,
+        correct: persisted.answers[idx] === (q.correctAnswer !== undefined ? q.correctAnswer : (q.gameData?.bugLineIndex ?? 0)),
       }));
 
       const newBoothResult: BoothResult = {
@@ -451,22 +477,22 @@ export default function App() {
         setShowCelebration(true);
       }
 
-      // Submit to Firebase Firestore database
+      // Submit to Firebase Firestore database - hold on until record is saved to Firebase
       try {
         const { submitResult } = await import('./services/submissionService');
-        await submitResult(participant, persisted, computedResult, completedCount, (status) => {
-          if (status === 'synced') {
+        await Promise.all([
+          submitResult(participant, persisted, computedResult, completedCount, (status) => {
             setDownloadError(null);
-          } else if (status === 'sync-pending') {
-            setDownloadError('Saved on this device. Firebase sync is pending and will retry when the connection is available.');
-          } else if (status === 'local-save-failed') {
-            setDownloadError('This browser could not confirm local storage. Firebase sync is being attempted; keep this page open until it completes.');
-          } else {
-            setDownloadError('The submission could not be saved locally or confirmed by Firebase. Please keep this page open and retry your connection.');
-          }
-        });
-      } catch {
-        console.warn('Submission recording encountered an issue.');
+            if (status === 'synced') {
+              console.log('[Firebase] Result synced successfully.');
+            } else {
+              console.warn('[Firebase] Status:', status);
+            }
+          }),
+          new Promise((resolve) => setTimeout(resolve, 500)),
+        ]);
+      } catch (err) {
+        console.warn('Submission recording encountered an issue:', err);
       }
 
       clearQuizState();
@@ -532,7 +558,7 @@ export default function App() {
   return (
     <>
       {showCelebration && <ConfettiCelebration onComplete={() => setShowCelebration(false)} />}
-      {(stage !== 'WELCOME' && stage !== 'PASSPORT' || loadError) && (
+      {((stage !== 'WELCOME' && stage !== 'PASSPORT' && stage !== 'QUIZ' && stage !== 'RESULT' && stage !== 'PARTICIPANT' && stage !== 'ALREADY_PLAYED') || loadError) && (
         <Header
           completedCount={completedCount}
           isWinner={isWinner}
@@ -540,7 +566,7 @@ export default function App() {
           isPassportActive={stage === 'PASSPORT'}
         />
       )}
-      <Layout wide={stage === 'WELCOME' && !loadError} showBanner={stage === 'WELCOME'}>
+      <Layout wide={stage === 'WELCOME' && !loadError} showBanner={false}>
         {loadError && (
           <div className="ts-page">
             <div className="ts-page__container">

@@ -1,4 +1,5 @@
-import type { QuizQuestion } from '../types';
+import type { QuizQuestion, GameType } from '../types';
+import { buildGamesForBooth } from './gameBank';
 
 /**
  * Question Engine for Technology Summit 2026
@@ -757,14 +758,241 @@ export const BOOTH_QUESTION_GENERATORS: Record<string, (count?: number) => QuizQ
   'booth-9': generateBooth9Questions,
 };
 
+export const BOOTH_GAMES_CONFIG: Record<string, { category: string; title: string; gameTypes: GameType[] }> = {
+  'booth-1': { category: 'Data & Security', title: 'Zero Trust & Lineage', gameTypes: ['memory_missing', 'grid_tap', 'odd_one', 'luck_pick', 'timer_stop'] },
+  'booth-2': { category: 'Frontier Technologies', title: 'Autonomous Agents & Identity', gameTypes: ['pair_match', 'sequence', 'pattern_quiz', 'sort_bucket', 'crowd_judge'] },
+  'booth-3': { category: 'Software Engineering', title: 'AI Developer Productivity', gameTypes: ['grid_tap', 'memory_missing', 'timer_stop', 'pattern_quiz', 'luck_pick'] },
+  'booth-4': { category: 'Cloud & Architecture', title: 'Cloud Modernization', gameTypes: ['odd_one', 'sort_bucket', 'pair_match', 'sequence', 'crowd_judge'] },
+  'booth-5': { category: 'Enterprise AI Platform', title: 'Enterprise AI Operations', gameTypes: ['memory_missing', 'pattern_quiz', 'grid_tap', 'timer_stop', 'luck_pick'] },
+  'booth-6': { category: 'Business Solutions', title: 'AI Business Automation', gameTypes: ['sort_bucket', 'odd_one', 'pair_match', 'crowd_judge', 'sequence'] },
+  'booth-7': { category: 'Risk & Banking', title: 'Agentic Banking & Risk', gameTypes: ['timer_stop', 'memory_missing', 'luck_pick', 'grid_tap', 'pattern_quiz'] },
+  'booth-8': { category: 'Enterprise Platforms', title: 'SRE & Platform Resilience', gameTypes: ['sequence', 'crowd_judge', 'pair_match', 'sort_bucket', 'odd_one'] },
+  'booth-9': { category: 'CI/CD & Quality', title: 'Engineering Automation & Quality', gameTypes: ['pattern_quiz', 'grid_tap', 'memory_missing', 'luck_pick', 'timer_stop'] },
+};
+
+export function generateMiniGamesForBooth(boothKey: string, count: number = 15): QuizQuestion[] {
+  // Use the new fun emoji-based game bank generator
+  return buildGamesForBooth(boothKey, count);
+}
+
+// Master map of lazy chunk loaders for each booth's 5,000 items (3,000 MCQs + 2,000 Games)
+const BOOTH_JSON_LOADERS: Record<string, () => Promise<any>> = {
+  'booth-1': () => import('../data/booth-1.json'),
+  'booth-2': () => import('../data/booth-2.json'),
+  'booth-3': () => import('../data/booth-3.json'),
+  'booth-4': () => import('../data/booth-4.json'),
+  'booth-5': () => import('../data/booth-5.json'),
+  'booth-6': () => import('../data/booth-6.json'),
+  'booth-7': () => import('../data/booth-7.json'),
+  'booth-8': () => import('../data/booth-8.json'),
+  'booth-9': () => import('../data/booth-9.json'),
+};
+
+function pickUniqueItems<T extends { id: string }>(pool: T[], count: number, seenSet: Set<string>): { picked: T[]; wrapAround: boolean } {
+  // Games dedupe by id (many fun games share the same question text like "Which emoji vanished?")
+  const getSig = (item: any) => item.itemType === 'game' ? item.id : String(item.question ?? item.id).trim().toLowerCase();
+  let available = pool.filter((item) => !seenSet.has(item.id) && !seenSet.has(getSig(item)));
+  let wrapAround = false;
+
+  // If bank exhausted (e.g. after cycling through all questions), start from front
+  if (available.length < count) {
+    seenSet.clear();
+    available = [...pool];
+    wrapAround = true;
+  }
+
+  // Shuffle available pool and pick requested count with guaranteed distinct question content
+  const shuffled = shuffle(available);
+  const picked: T[] = [];
+  const pickedSigs = new Set<string>();
+
+  for (const item of shuffled) {
+    const sig = getSig(item);
+    if (!pickedSigs.has(sig)) {
+      pickedSigs.add(sig);
+      picked.push(item);
+      seenSet.add(item.id);
+      seenSet.add(sig);
+      if (picked.length === count) break;
+    }
+  }
+
+  return { picked, wrapAround };
+}
+
+function pickDistinctGames(
+  gamesPool: QuizQuestion[],
+  count: number = 2,
+  seenIds: Set<string>,
+  participantId?: string
+): QuizQuestion[] {
+  // Global played game types key across all booths for this participant
+  const globalTypesKey = `ts_played_gtypes_${participantId ? participantId.replace(/[^a-zA-Z0-9]/g, '_') : 'guest'}`;
+  let playedTypes: string[] = [];
+  try {
+    const raw = localStorage.getItem(globalTypesKey);
+    if (raw) playedTypes = JSON.parse(raw);
+  } catch {
+    // LocalStorage safety
+  }
+
+  // Filter available games not seen by ID in this booth
+  let available = gamesPool.filter((g) => !seenIds.has(g.id));
+  if (available.length < count) {
+    available = [...gamesPool];
+  }
+
+  // Shuffle available pool
+  const shuffled = shuffle(available);
+  const picked: QuizQuestion[] = [];
+  const pickedInThisBooth = new Set<string>();
+
+  // Pass 1: Try picking games whose gameTypes have not been played recently by attendee
+  const playedSet = new Set(playedTypes);
+  for (const g of shuffled) {
+    const gt = g.gameType || 'game';
+    if (!pickedInThisBooth.has(gt) && !playedSet.has(gt)) {
+      pickedInThisBooth.add(gt);
+      picked.push(g);
+      seenIds.add(g.id);
+      playedTypes.push(gt);
+      if (picked.length === count) break;
+    }
+  }
+
+  // Pass 2: If we still need games, pick games with distinct gameTypes from the current booth
+  if (picked.length < count) {
+    for (const g of shuffled) {
+      const gt = g.gameType || 'game';
+      if (!pickedInThisBooth.has(gt)) {
+        pickedInThisBooth.add(gt);
+        picked.push(g);
+        seenIds.add(g.id);
+        playedTypes.push(gt);
+        if (picked.length === count) break;
+      }
+    }
+  }
+
+  // Pass 3: Ultimate fallback if pool has only 1 gameType
+  if (picked.length < count) {
+    for (const g of shuffled) {
+      if (!picked.includes(g)) {
+        picked.push(g);
+        seenIds.add(g.id);
+        if (picked.length === count) break;
+      }
+    }
+  }
+
+  // If attendee has played through many game types, wrap around
+  try {
+    if (playedTypes.length > 15) {
+      playedTypes = playedTypes.slice(-6);
+    }
+    localStorage.setItem(globalTypesKey, JSON.stringify(playedTypes));
+  } catch {
+    // LocalStorage safety
+  }
+
+  return picked;
+}
+
+/**
+ * Production-Grade Dynamic Question Loader for 1,000+ Summit Attendees.
+ * - Draws from the massive bank of 3,000 MCQs + 2,000 Fun Games per booth (5,000 total items).
+ * - Rotates uniquely per attendee: exactly 3 MCQs and 2 Games per player.
+ * - Guaranteed distinct game types in the same booth (no game type repeated).
+ * - Tracks played game types across booths so users experience different mini-games.
+ * - Strictly structures questions in balanced alternating order: [MCQ, Game, MCQ, Game, MCQ].
+ * - Tracks seen questions in device storage to prevent repeats on the same device.
+ * - When all 3,000 MCQs / 2,000 Games have been cycled through, wraps back to start from front.
+ * - Seamless in-memory procedural fallback if offline.
+ */
+export async function loadBoothQuestions(boothId: string, participantId?: string): Promise<QuizQuestion[]> {
+  const normId = boothId.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const key = normId.startsWith('booth-') ? normId : `booth-${normId}`;
+
+  try {
+    const loader = BOOTH_JSON_LOADERS[key];
+    if (loader) {
+      const rawModule = await loader();
+      const allItems: QuizQuestion[] = (rawModule.default || rawModule) as QuizQuestion[];
+
+      if (Array.isArray(allItems) && allItems.length > 0) {
+        const mcqs = allItems.filter((item) => item.itemType !== 'game');
+        const games = allItems.filter((item) => item.itemType === 'game');
+
+        if (mcqs.length >= 3 && games.length >= 2) {
+          // Read seen question cache from storage for this booth
+          const storageKey = `ts_seen_${key}_${participantId ? participantId.replace(/[^a-zA-Z0-9]/g, '_') : 'guest'}`;
+          let seenIds = new Set<string>();
+          try {
+            const rawStored = localStorage.getItem(storageKey);
+            if (rawStored) {
+              const parsed = JSON.parse(rawStored);
+              if (Array.isArray(parsed)) {
+                seenIds = new Set(parsed);
+              }
+            }
+          } catch {
+            // LocalStorage safety
+          }
+
+          // Pick 3 non-repeating MCQs
+          const { picked: pickedMcqs } = pickUniqueItems(mcqs, 3, seenIds);
+
+          // Pick 2 non-repeating Games with GUARANTEED distinct game types and cross-booth rotation
+          const freshGames = buildGamesForBooth(key, 60);
+          const pickedGames = pickDistinctGames(freshGames, 2, seenIds, participantId);
+
+          // Persist updated seen history
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(Array.from(seenIds)));
+          } catch {
+            // LocalStorage safety
+          }
+
+          // Return in rhythmic alternating order: [MCQ 1, Game 1, MCQ 2, Game 2, MCQ 3]
+          return [
+            pickedMcqs[0],
+            pickedGames[0],
+            pickedMcqs[1],
+            pickedGames[1],
+            pickedMcqs[2]
+          ].filter(Boolean);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(`[QuestionEngine] Dynamic JSON load for ${key} fallback to generator:`, error);
+  }
+
+  // Instant in-memory procedural fallback if chunk is unreachable
+  return getRichQuestionsForBooth(key, 50);
+}
+
 /**
  * Returns a dynamically synthesized pool of questions for any booth.
- * Ensures non-repetition across thousands of players.
+ * Ensures non-repetition across thousands of players, mixing MCQs and interactive Games.
  */
 export function getRichQuestionsForBooth(boothId: string, count: number = 40): QuizQuestion[] {
   const normId = boothId.toLowerCase().replace(/[^a-z0-9-]/g, '');
   const key = normId.startsWith('booth-') ? normId : `booth-${normId}`;
   const generator = BOOTH_QUESTION_GENERATORS[key] || generateBooth1Questions;
-  const questions = generator(count);
-  return shuffle(questions);
+  
+  // Generate MCQs and tag them explicitly
+  const rawMcqs = generator(count).map((q) => ({
+    ...q,
+    itemType: (q.itemType || 'mcq') as 'mcq',
+  }));
+
+  // Generate engaging mini-games for this booth
+  const games = generateMiniGamesForBooth(key, Math.max(12, Math.floor(count / 2)));
+
+  // Combine both pools
+  return shuffle([...rawMcqs, ...games]);
 }
+
+
+

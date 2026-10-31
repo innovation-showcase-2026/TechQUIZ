@@ -516,20 +516,680 @@ const BOOTH_SPECS = [
   }
 ];
 
-// Generates 5,000 uniquely randomized, humorous, tricky questions for a booth
-function generateBoothBank(spec, targetCount = 5000) {
+// 30 Diverse Production Code Review Templates for Interactive Mini-Games
+const CODE_REVIEW_TEMPLATES = [
+  {
+    topic: 'File System & Ingestion Security',
+    build: (sys, num) => ({
+      title: `${sys} Ingestion Worker`,
+      lines: [
+        `const payload = await sftpStream.readChunk();`,
+        `const sanitized = scrubPIIFields(payload);`,
+        `if (sanitized.length > 0) fs.rmSync("/", { recursive: true }); // delete temp files 💣`,
+        `await elasticClient.bulkIndex(sanitized);`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 attempts to recursively delete the entire server root directory instead of a temp directory!',
+    }),
+  },
+  {
+    topic: 'Authentication & Privilege Escalation',
+    build: (sys, num) => ({
+      title: `${sys} Microservice Gate`,
+      lines: [
+        `const token = await authService.verify(req.headers.authorization);`,
+        `if (!token) throw new AuthError("Missing bearer token");`,
+        `if (token.role === "guest") token.role = "superuser"; // temporary override for demo 💣`,
+        `return handleDataProcessing(req.body);`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 quietly promotes unauthenticated guest accounts to full superuser privileges!',
+    }),
+  },
+  {
+    topic: 'Financial Transaction Calculation',
+    build: (sys, num) => ({
+      title: `${sys} Payment Settlement Engine`,
+      lines: [
+        `const rate = await currencyBroker.fetchExchangeRate("USD", "INR");`,
+        `const finalDebit = transaction.amount * rate;`,
+        `if (finalDebit > 1000) transaction.discount = 1.0; // 100% discount promotion 💸`,
+        `await ledger.recordDebit(finalDebit * (1 - transaction.discount));`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 awards a 100% discount waiver on massive enterprise wire transfers!',
+    }),
+  },
+  {
+    topic: 'Relational Database SQL Injection',
+    build: (sys, num) => ({
+      title: `${sys} Account Query Handler`,
+      lines: [
+        `const { accountId, searchFilter } = req.query;`,
+        `const query = \`SELECT * FROM ledger WHERE id = '\${accountId}' AND note LIKE '%\${searchFilter}%'\`;`,
+        `const rows = await dbPool.rawExecute(query);`,
+        `return res.json({ status: "success", data: rows });`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 concatenates unescaped user query parameters directly into raw SQL query!',
+    }),
+  },
+  {
+    topic: 'Transaction ACID Commit Concurrency',
+    build: (sys, num) => ({
+      title: `${sys} Balance Transfer Coordinator`,
+      lines: [
+        `const tx = await dbClient.beginTransaction();`,
+        `await tx.query("UPDATE accounts SET balance = balance - $1 WHERE id = $2", [amt, fromId]);`,
+        `tx.commit(); // fire-and-forget transaction commit without awaiting 💣`,
+        `return res.status(200).send({ message: "Transfer queued" });`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 fails to await tx.commit(), risking silent rollbacks and orphaned state!',
+    }),
+  },
+  {
+    topic: 'Unbounded Memory Leak & OOM',
+    build: (sys, num) => ({
+      title: `${sys} Telemetry Ingestion Collector`,
+      lines: [
+        `const metricsBuffer = []; // global module-level cache`,
+        `export function trackRequest(req) {`,
+        `  metricsBuffer.push(req); // retains entire request socket objects indefinitely 💣`,
+        `  if (metricsBuffer.length > 0) metricsLogger.flush(); }`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 pushes whole request objects into an unbounded array, causing Node.js heap OOM crash!',
+    }),
+  },
+  {
+    topic: 'ReDoS Catastrophic Backtracking',
+    build: (sys, num) => ({
+      title: `${sys} Email Validator Middleware`,
+      lines: [
+        `const userEmail = req.body.email || "";`,
+        `const emailRegex = /^([a-zA-Z0-9]+)*@([a-zA-Z0-9]+)*\\.[a-z]+$/; // nested catastrophic quantifiers 💣`,
+        `if (!emailRegex.test(userEmail)) return res.status(400).send("Invalid email");`,
+        `return handleUserRegistration(userEmail);`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 uses nested regex quantifiers vulnerable to catastrophic polynomial backtracking (ReDoS)!',
+    }),
+  },
+  {
+    topic: 'PII & PCI-DSS Plaintext Exposure',
+    build: (sys, num) => ({
+      title: `${sys} Card Tokenizer Service`,
+      lines: [
+        `const payload = decryptCardPayload(req.body.encrypted);`,
+        `logger.info("Payment processing started", { pan: payload.creditCardNumber, cvv: payload.cvv }); // PII leak 💣`,
+        `const token = await paymentGateway.tokenize(payload);`,
+        `return res.json({ token, status: "tokenized" });`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 logs unencrypted primary account numbers (PAN) and CVV codes in plaintext!',
+    }),
+  },
+  {
+    topic: 'Database Connection Pool Starvation',
+    build: (sys, num) => ({
+      title: `${sys} High-Throughput Order Service`,
+      lines: [
+        `const client = await pool.connect();`,
+        `try {`,
+        `  return await client.query("SELECT * FROM high_volume_orders"); // returns without releasing client 💣`,
+        `} catch (e) { client.release(); throw e; }`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 returns query results without calling client.release(), starving the connection pool!',
+    }),
+  },
+  {
+    topic: 'Boundary Condition Off-By-One',
+    build: (sys, num) => ({
+      title: `${sys} Partition Dispatcher`,
+      lines: [
+        `const partitions = await kafka.getPartitions("telemetry-feed");`,
+        `for (let i = 0; i <= partitions.length; i++) { // off-by-one out of bounds error 💣`,
+        `  const worker = spawnPartitionWorker(partitions[i].id);`,
+        `  worker.start(); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 iterates with i <= length, throwing TypeError accessing undefined index on last loop!',
+    }),
+  },
+  {
+    topic: 'Hardcoded Cryptographic Secret',
+    build: (sys, num) => ({
+      title: `${sys} JWT Token Verifier`,
+      lines: [
+        `const token = req.headers["x-access-token"];`,
+        `const JWT_SECRET = "production_super_secret_master_key_do_not_leak_12345"; // hardcoded secret 💣`,
+        `const decoded = jwt.verify(token, JWT_SECRET);`,
+        `return next();`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 hardcodes production cryptographic secrets directly in source control!',
+    }),
+  },
+  {
+    topic: 'Event Loop Blocking Thread Freeze',
+    build: (sys, num) => ({
+      title: `${sys} Webhook Ingress Gateway`,
+      lines: [
+        `export async function handleWebhook(payload) {`,
+        `  const waitUntil = Date.now() + 5000; while (Date.now() < waitUntil) {} // blocks Node event loop for 5s 💣`,
+        `  await forwardPayloadToQueue(payload);`,
+        `  return { acknowledged: true }; }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 runs a synchronous while-loop that freezes the entire single-threaded Node.js event loop!',
+    }),
+  },
+  {
+    topic: 'CORS Wildcard with Credentials',
+    build: (sys, num) => ({
+      title: `${sys} Public REST API Endpoint`,
+      lines: [
+        `app.use((req, res, next) => {`,
+        `  res.setHeader("Access-Control-Allow-Origin", "*");`,
+        `  res.setHeader("Access-Control-Allow-Credentials", "true"); // illegal browser wildcard with credentials 💣`,
+        `  next(); });`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 combines Allow-Origin: * with Allow-Credentials: true, rejected by modern browsers!',
+    }),
+  },
+  {
+    topic: 'Insecure Direct Object Reference (IDOR)',
+    build: (sys, num) => ({
+      title: `${sys} Invoice Download Controller`,
+      lines: [
+        `app.get("/api/v1/invoices/:id", async (req, res) => {`,
+        `  const invoice = await db.invoices.findById(req.params.id); // missing tenantId / userId ownership check 💣`,
+        `  if (!invoice) return res.status(404).send("Not found");`,
+        `  return res.json(invoice); });`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 queries by primary key without scoping by the authenticated user or tenant ID!',
+    }),
+  },
+  {
+    topic: 'Unhandled Promise Rejection Crash',
+    build: (sys, num) => ({
+      title: `${sys} Alert Dispatch Worker`,
+      lines: [
+        `app.post("/api/v1/alerts", (req, res) => {`,
+        `  dispatchIncidentToSlack(req.body); // unhandled rejected promise crashes worker process 💣`,
+        `  return res.status(202).json({ queued: true }); });`,
+        `async function dispatchIncidentToSlack(b) { throw new Error("Slack API timeout"); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 fires an asynchronous promise without .catch() or await, triggering unhandledRejection!',
+    }),
+  },
+  {
+    topic: 'Arithmetic Division By Zero Trap',
+    build: (sys, num) => ({
+      title: `${sys} Risk Margin Calculator`,
+      lines: [
+        `const totalCollateral = portfolio.collateralAssets;`,
+        `const activeLiabilities = portfolio.liabilities - portfolio.clearedDebt;`,
+        `const riskIndex = totalCollateral / activeLiabilities; // division by zero when liabilities equal debt 💣`,
+        `await recordRiskAuditScore(portfolio.id, riskIndex);`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 divides by activeLiabilities without checking for zero, producing Infinity or NaN!',
+    }),
+  },
+  {
+    topic: 'Remote Code Execution Via Eval',
+    build: (sys, num) => ({
+      title: `${sys} Dynamic Rule Evaluator`,
+      lines: [
+        `export function executeDynamicFilter(record, expression) {`,
+        `  const evalResult = eval("record." + expression); // remote code execution via untrusted string 💣`,
+        `  return Boolean(evalResult); }`,
+        `export function applyQuery(req) { return executeDynamicFilter(req.body, req.query.expr); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 executes arbitrary user-supplied string in eval(), opening critical Remote Code Execution!',
+    }),
+  },
+  {
+    topic: 'Predictable Pseudo-Random Generation',
+    build: (sys, num) => ({
+      title: `${sys} Password Reset Service`,
+      lines: [
+        `export function generatePasswordResetToken() {`,
+        `  const randomToken = Math.random().toString(36).substring(2); // pseudo-random PRNG predictable token 💣`,
+        `  return hashToken(randomToken); }`,
+        `export async function queueReset(email) { const t = generatePasswordResetToken(); await mailer.send(email, t); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 uses Math.random() which is cryptographically non-secure and easily predictable!',
+    }),
+  },
+  {
+    topic: 'Webhook Replay Vulnerability',
+    build: (sys, num) => ({
+      title: `${sys} Payment Webhook Receiver`,
+      lines: [
+        `const signature = req.headers["x-hub-signature"];`,
+        `const isValid = verifySignature(signature, req.rawBody);`,
+        `if (isValid) await processPaymentEvent(req.body); // missing timestamp & nonce check enables replay attack 💣`,
+        `return res.status(200).send("OK");`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 processes payments without checking request timestamps or nonces, allowing replay attacks!',
+    }),
+  },
+  {
+    topic: 'Localhost Hardcoding In Production',
+    build: (sys, num) => ({
+      title: `${sys} Outbound Settlement Client`,
+      lines: [
+        `export async function forwardToPaymentSettlement(wirePayload) {`,
+        `  const endpoint = "http://localhost:8080/v1/settle"; // hardcoded local address fails in cloud container 💣`,
+        `  const response = await fetch(endpoint, { method: "POST", body: JSON.stringify(wirePayload) });`,
+        `  return await response.json(); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 hardcodes http://localhost:8080 which fails immediately inside containerized Kubernetes pods!',
+    }),
+  },
+  {
+    topic: 'Insecure TLS Certificate Verification',
+    build: (sys, num) => ({
+      title: `${sys} Secure Vault Proxy`,
+      lines: [
+        `const agent = new https.Agent({`,
+        `  rejectUnauthorized: false, // disables TLS cert verification, allowing Man-in-the-Middle attacks 💣`,
+        `  timeout: 5000 });`,
+        `return axios.get("https://core-ledger.internal/api", { httpsAgent: agent });`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 disables TLS certificate validation, leaving production traffic exposed to MITM intercept!',
+    }),
+  },
+  {
+    topic: 'NoSQL Operator Injection',
+    build: (sys, num) => ({
+      title: `${sys} Customer Auth Repository`,
+      lines: [
+        `app.post("/api/v1/auth", async (req, res) => {`,
+        `  const { username, password } = req.body; // payload: { "password": { "$ne": null } }`,
+        `  const user = await usersCollection.findOne({ username, password }); // NoSQL injection bypasses password 💣`,
+        `  return res.json({ session: user ? createToken(user) : null }); });`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 passes raw request body objects to findOne(), allowing NoSQL operator injection ($ne)!',
+    }),
+  },
+  {
+    topic: 'Memory Leak Without TTL',
+    build: (sys, num) => ({
+      title: `${sys} Session Token Storage`,
+      lines: [
+        `export async function storeSessionToken(sessionId, tokenData) {`,
+        `  await redisClient.set(\`sess:\${sessionId}\`, JSON.stringify(tokenData)); // missing TTL leaks RAM indefinitely 💣`,
+        `  return sessionId; }`,
+        `export async function getSession(sessionId) { return await redisClient.get(\`sess:\${sessionId}\`); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 stores session keys in Redis without an expiration TTL, saturating cluster RAM!',
+    }),
+  },
+  {
+    topic: 'Message Loss Auto-Commit',
+    build: (sys, num) => ({
+      title: `${sys} Kafka Event Pipeline`,
+      lines: [
+        `await consumer.run({`,
+        `  autoCommit: true, // auto-commits offset before handleRecord completes, causing message loss on crash 💣`,
+        `  eachMessage: async ({ message }) => { await processHeavyETL(message.value); } });`,
+        `console.log("Kafka consumer worker running");`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 enables autoCommit, permanently losing uncommitted records if the worker pod restarts!',
+    }),
+  },
+  {
+    topic: 'Prototype Pollution Injection',
+    build: (sys, num) => ({
+      title: `${sys} Global Config Merger`,
+      lines: [
+        `export function mergeConfig(target, source) {`,
+        `  for (const key of Object.keys(source)) {`,
+        `    target[key] = source[key]; // vulnerable to __proto__ prototype pollution attacks 💣`,
+        `  } return target; }`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 assigns properties without filtering out __proto__, exposing prototype pollution vulnerabilities!',
+    }),
+  },
+  {
+    topic: 'Silent Exception Suppression',
+    build: (sys, num) => ({
+      title: `${sys} Financial Journal Logger`,
+      lines: [
+        `try {`,
+        `  await auditLedger.recordFinancialEntry(tx);`,
+        `} catch (err) { /* silent catch block hides failed journal entries 💣 */ }`,
+        `return { status: "COMPLETED", confirmationCode: tx.id };`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 silently discards database exceptions, leaving financial books out of balance!',
+    }),
+  },
+  {
+    topic: 'Timing Attack Vulnerability',
+    build: (sys, num) => ({
+      title: `${sys} API Key Authenticator`,
+      lines: [
+        `export function verifyApiKey(providedKey, secretKey) {`,
+        `  if (providedKey === secretKey) return true; // non-constant time comparison allows timing attacks 💣`,
+        `  return false; }`,
+        `export function authMiddleware(req, res, next) { if (verifyApiKey(req.headers.key, KEY)) next(); }`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 uses === for token comparison, leaking character positions via timing channel attacks!',
+    }),
+  },
+  {
+    topic: 'XML External Entity (XXE) Vulnerability',
+    build: (sys, num) => ({
+      title: `${sys} XML Payload Ingestion`,
+      lines: [
+        `const parser = new xml2js.Parser({`,
+        `  allowExternalEntities: true, // enables XXE file reading and SSRF attacks 💣`,
+        `  explicitArray: false });`,
+        `const parsed = await parser.parseStringPromise(req.body);`,
+      ],
+      bugLineIndex: 1,
+      explanation: 'Line 2 enables external entities, allowing malicious XML payloads to read local files via XXE!',
+    }),
+  },
+  {
+    topic: 'Shared Mutable Singleton State',
+    build: (sys, num) => ({
+      title: `${sys} Multi-Tenant Config Store`,
+      lines: [
+        `const tenantCache = {}; // shared module-level state across all tenants`,
+        `export function setTenantSettings(tenantId, settings) {`,
+        `  tenantCache.current = settings; // overwrites current settings globally for all concurrent requests 💣`,
+        `  return tenantCache.current; }`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 stores tenant context in a global singleton, cross-contaminating concurrent tenant data!',
+    }),
+  },
+  {
+    topic: 'Missing Rate Limit Increment',
+    build: (sys, num) => ({
+      title: `${sys} DDoS Rate Limiter`,
+      lines: [
+        `const count = await cache.get(\`ratelimit:\${ip}\`);`,
+        `if (count && count > 100) throw new RateLimitExceeded();`,
+        `// missing cache.incr(\`ratelimit:\${ip}\`) allows infinite requests without throttling 💣`,
+        `return handleDownstreamService(req);`,
+      ],
+      bugLineIndex: 2,
+      explanation: 'Line 3 checks the rate limit threshold but forgets to increment the counter, bypassing rate limiting!',
+    }),
+  },
+];
+
+// ────────────────────────────────────────────────
+// Funny Emoji Mini-Game Templates & Generator
+// ────────────────────────────────────────────────
+const POOLS = {
+  animals: ['🐶', '🐱', '🐼', '🦊', '🐸', '🐵', '🦁', '🐯', '🐨', '🐙', '🦄', '🐧', '🦉', '🦋', '🦖', '🐬', '🦥', '🦩'],
+  food:    ['🍕', '🍔', '🍟', '🍎', '🍌', '🍇', '🍩', '🌮', '🍉', '🥑', '🧁', '🍰', '🍦', '🍿', '🍣', '🍪', '🥞', '🥨'],
+  tech:    ['💻', '📱', '🔌', '🔋', '🤖', '🛰️', '💾', '🖱️', '⌨️', '📡', '🎮', '🕹️', '🕶️', '🚀', '📟', '👾', '🎧', '🔬'],
+  faces:   ['😀', '😎', '🤓', '😴', '🤯', '🥳', '😡', '🤖', '👻', '😺', '🤡', '🥸', '🤠', '🕵️', '👽', '🤪', '🤫', '🤩'],
+  objects: ['⚽', '🎸', '🚗', '⏰', '🎈', '🔑', '📦', '🎁', '🧲', '🔔', '💎', '🎯', '👑', '🏆', '🪄', '📢', '🧰', '💎'],
+  nature:  ['🌸', '🌻', '🌵', '🍀', '🌈', '⭐', '🌙', '☀️', '🌊', '🔥', '❄️', '🍂', '⚡', '🌋', '🍄', '🪐', '🌴', '🍁'],
+  magic:   ['🧙‍♂️', '🪄', '🔮', '✨', '🗝️', '📜', '🏰', '🐉', '🕯️', '🧪', '🧿', '🦄', '🧞', '🪙', '🦉', '🪞'],
+  sports:  ['⚽', '🏀', '🎾', '🏈', '🎱', '🏓', '🥊', '🏹', '🛹', '⛷️', '🏄‍♂️', '🏋️', '🚴', '🏆', '🏅', '⛳'],
+};
+const POOL_KEYS = Object.keys(POOLS);
+
+const BOOTH_SKIN = {
+  'booth-1': { pool: 'tech',    win: ['Zero Trust? Zero mistakes! 🛡️', 'Firewall champion! 🔥', 'Data guardian supreme! 🗄️', 'Vault unlocked! 🔑'], lose: ['Even firewalls blink 🔥', 'Even robots miss sometimes 🤖', 'Challenge missed, security hero! 🛡️'] },
+  'booth-2': { pool: 'magic',   win: ['Agent approved! 🤖', 'Digital identity verified! ✅', 'AI superstar! 🌟', 'Autonomous genius! ⚡'], lose: ['The agent needs coffee ☕', 'Back to the training data! 📊', 'Almost autonomous! 🤖'] },
+  'booth-3': { pool: 'objects', win: ['Merged to main! 🚀', 'PR approved with confetti! 🎉', 'Code wizard! 🧙‍♂️', 'Zero build errors! ✨'], lose: ['Works on my machine 😅', 'git reset --hard 💔', 'Compile error in heart 💔'] },
+  'booth-4': { pool: 'nature',  win: ['Cloud-native champ ☁️', 'Scaled to infinity! ♾️', 'Migration master! 🦅', 'Kubernetes tamer! 🪐'], lose: ['Cloud bill shock 💸', 'Pod not found 🫣', 'Still on-prem in spirit 🏚️'] },
+  'booth-5': { pool: 'tech',    win: ['Tokens saved! 💰', 'Model deployed! 🚀', 'AI ops legend! 🏆', 'Zero hallucination! 🎯'], lose: ['Model hallucinated 🌀', 'GPU went brrrr 🥶', 'Overfitting detected 📉'] },
+  'booth-6': { pool: 'sports',  win: ['Automated! ⚡', 'Process perfection! 💎', 'BI brilliance! 📊', 'Workflow speedrun! 🏎️'], lose: ['Back to Excel 📊', 'VLOOKUPs forever 😭', 'Spreadsheet strikes back 📋'] },
+  'booth-7': { pool: 'faces',   win: ['Risk cleared! 🏦', 'Fraud busted! 🕵️', 'Compliant king! 👑', 'Ledger balanced! 💰'], lose: ['Flagged for review 🚩', 'Audit incoming 📝', 'Risk tolerance exceeded 😬'] },
+  'booth-8': { pool: 'animals', win: ['Zero downtime! 🟢', 'SRE hero badge! 🦸', 'Uptime warrior! ⚔️', 'Four nines achieved! 🛡️'], lose: ['Chaos Monkey won 🐒', 'Pager went off 📟', '500 Internal LOL 😂'] },
+  'booth-9': { pool: 'food',    win: ['All tests green ✅', 'Pipeline perfection! 🎯', 'Quality queen! 👸', 'Shipped with pizza! 🍕'], lose: ['Flaky test strikes 🎲', 'Build broke at 5pm 😱', 'Coverage dropped 📉'] },
+};
+
+function rng(seed) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function sample(r, a, n) {
+  return [...a].sort(() => r() - 0.5).slice(0, n);
+}
+
+const TRICKY_PAIRS = [
+  ['🐱', '🐶'], ['🍎', '🍏'], ['🌝', '🌚'], ['🍩', '🍪'], ['🚗', '🏎️'],
+  ['⚡', '💡'], ['🐊', '🦎'], ['🐧', '🦆'], ['🤖', '👾'], ['🍦', '🍧'],
+  ['🍕', '🍔'], ['⭐', '🌟'], ['🔥', '💥'], ['🌧️', '⛈️'], ['⚽', '🏀'],
+  ['💎', '💣'], ['🚀', '🛸'], ['🍀', '🍂'], ['🎈', '📌'], ['☕', '🥛'],
+];
+
+const SORT_SETS = [
+  { buckets: ['🍎 Fruit', '🥕 Veggie'], items: [['🍌', 0], ['🥦', 1], ['🍇', 0], ['🥕', 1], ['🍓', 0], ['🌽', 1]] },
+  { buckets: ['☁️ Cloud', '🖥️ On-Prem'], items: [['☁️', 0], ['🖱️', 1], ['💾', 1], ['🌐', 0], ['📡', 0], ['🖨️', 1]] },
+  { buckets: ['🌞 Day', '🌙 Night'], items: [['☀️', 0], ['🌟', 1], ['🐓', 0], ['🦉', 1], ['☕', 0], ['🌙', 1]] },
+  { buckets: ['🔥 Hot', '❄️ Cold'], items: [['🌶️', 0], ['🧊', 1], ['🏜️', 0], ['⛷️', 1], ['🔥', 0], ['🍦', 1]] },
+  { buckets: ['✅ Safe', '🎣 Phish'], items: [['🔒', 0], ['📧', 1], ['🛡️', 0], ['🎁', 1], ['✅', 0], ['⚠️', 1]] },
+  { buckets: ['🐱 Cat', '🐶 Dog'], items: [['😺', 0], ['🐕', 1], ['🐈', 0], ['🦮', 1], ['😸', 0], ['🐩', 1]] },
+  { buckets: ['🍕 Fast Food', '🥗 Healthy'], items: [['🍔', 0], ['🥦', 1], ['🍟', 0], ['🥗', 1], ['🍕', 0], ['🥑', 1]] },
+  { buckets: ['☕ Morning Fuel', '😴 Midnight Snack'], items: [['☕', 0], ['🍿', 1], ['🥐', 0], ['🍪', 1], ['🥞', 0], ['🍫', 1]] },
+  { buckets: ['🦸 Hero', '🦹 Villain'], items: [['🦸', 0], ['🦹', 1], ['🛡️', 0], ['💣', 1], ['✨', 0], ['💀', 1]] },
+  { buckets: ['🚀 Fast', '🐢 Slow'], items: [['🏎️', 0], ['🐢', 1], ['⚡', 0], ['🦥', 1], ['🚀', 0], ['🐌', 1]] },
+  { buckets: ['🏖️ Beach', '🏔️ Mountain'], items: [['🌊', 0], ['⛷️', 1], ['🌴', 0], ['🧗', 1], ['🏖️', 0], ['❄️', 1]] },
+  { buckets: ['🎮 Gaming', '💼 Office Work'], items: [['🕹️', 0], ['💼', 1], ['🎮', 0], ['🗂️', 1], ['👾', 0], ['📊', 1]] },
+  { buckets: ['💻 Frontend', '🖧 Backend'], items: [['🎨', 0], ['🗄️', 1], ['📱', 0], ['🔌', 1], ['✨', 0], ['💾', 1]] },
+  { buckets: ['🟢 Ship to Prod', '🔴 Rollback Now'], items: [['🚀', 0], ['💣', 1], ['✅', 0], ['🔥', 1], ['🎉', 0], ['🚨', 1]] },
+  { buckets: ['🤖 AI Agent', '👨‍💼 Real Human'], items: [['🤖', 0], ['👨‍💼', 1], ['🦾', 0], ['☕', 1], ['🧠', 0], ['😴', 1]] },
+];
+
+const CROWD_CHALLENGES = [
+  { icon: '🎈', challenge: 'Pretend to inflate an invisible balloon until it pops! 💥' },
+  { icon: '🗣️', challenge: 'Say "Kubernetes orchestrates containers" 3 times super fast!' },
+  { icon: '🤳', challenge: 'Copy this emoji face perfectly: 🤪' },
+  { icon: '🙆', challenge: 'Do a 5-second desk stretch! Show us those moves!' },
+  { icon: '🤖', challenge: 'Do your best robot dance for 5 seconds!' },
+  { icon: '🎤', challenge: 'Sing "Hello World" in an opera voice!' },
+  { icon: '🦸', challenge: 'Strike your best superhero pose!' },
+  { icon: '🦁', challenge: 'Do your best wild animal impression (meow or roar)!' },
+  { icon: '💃', challenge: 'Do the victory floss dance for 5 seconds!' },
+  { icon: '🧘', challenge: 'Hold a yoga tree pose for 5 seconds without wobbling!' },
+  { icon: '🎭', challenge: 'Act surprised like you just won a billion dollars!' },
+  { icon: '🏋️', challenge: 'Pretend to lift an invisible 500kg heavy weight!' },
+  { icon: '🎸', challenge: 'Unleash an epic air guitar rock solo for 5 seconds!' },
+  { icon: '🕶️', challenge: 'Perform a slow-motion Matrix bullet dodge!' },
+  { icon: '✋', challenge: 'Give the nearest attendee an energetic high-five!' },
+  { icon: '😉', challenge: 'Wink alternately with both eyes as fast as you can!' },
+  { icon: '🍋', challenge: 'Make a face like you just bit into an ultra-sour lemon!' },
+  { icon: '🏆', challenge: 'Show us your Olympic slow-motion gold medal celebration!' },
+  { icon: '🏎️', challenge: 'Pretend your hands are on a Formula 1 steering wheel!' },
+  { icon: '🕺', challenge: 'Do the moonwalk in place for 5 seconds!' },
+];
+
+const GAME_BUILDERS = {
+  // 🧠 Memory Missing: 8 items shown, 6 options, 1 Guess Only
+  memory_missing: (r, pool) => {
+    const shown = sample(r, pool, 8);
+    const missingIdx = Math.floor(r() * 8);
+    const missing = shown[missingIdx];
+    const otherShown = shown.filter(e => e !== missing);
+    const distractors = sample(r, otherShown, 5);
+    const options = sample(r, [missing, ...distractors], 6);
+    return {
+      q: '🧠 Memory Master: 8 items memorised… one vanishes! (1 Guess Only)',
+      gameData: { shown, missing, options, showMs: 2500, attempts: 1 },
+    };
+  },
+
+  // 🎯 Grid Tap: 4x4 (16 cells), 6 targets in 10s, 1 Life (decoy = instant fail)
+  grid_tap: (r, pool, i) => {
+    const pair = TRICKY_PAIRS[i % TRICKY_PAIRS.length] || sample(r, pool, 2);
+    const [target, decoy] = pair;
+    return {
+      q: `🎯 Quick Tap: Collect 6 ${target} in 10s — 1 mistake on ${decoy} = Fail!`,
+      gameData: { target, decoy, size: 16, goal: 6, durationSec: 10, lives: 1 },
+    };
+  },
+
+  // 🔍 Spot the Impostor: 4x4 (16 cells), subtle lookalike pair, 1 Tap Only
+  odd_one: (r, pool, i) => {
+    const pair = TRICKY_PAIRS[(i * 3 + 1) % TRICKY_PAIRS.length] || sample(r, pool, 2);
+    const [base, odd] = pair;
+    return {
+      q: `🔍 Spot Impostor: Find the subtle odd one among 16! (1 Tap Only)`,
+      gameData: { base, odd, cells: 16, oddIndex: Math.floor(r() * 16), durationSec: 12, attempts: 1 },
+    };
+  },
+
+  // 🃏 Match Maker: 6 cards (3 pairs), 1.8s peek, Zero Errors allowed
+  pair_match: (r, pool) => ({
+    q: '🃏 Match Maker: 3 pairs! Zero Mismatches Allowed (1 Mismatch = Fail)',
+    gameData: { faces: sample(r, pool, 3), attempts: 1, peekMs: 1800 },
+  }),
+
+  // 🎨 Copy Cat: 5-step Simon sequence, 1 attempt
+  sequence: (r) => ({
+    q: '🎨 Sequence Ninja: Repeat the 5-step pattern! (1 Mistake = Fail)',
+    gameData: { colors: ['🔥', '⚡', '💧', '🌿'], length: 5, attempts: 1 },
+  }),
+
+  // ⏱️ Stop the Bar: Fast 1.65 speed, narrow 14% zone, Strictly 1 Shot
+  timer_stop: (r) => {
+    const w = 14;
+    const start = 25 + Math.floor(r() * 35);
+    return {
+      q: '⏱️ Laser Stop: Stop inside the narrow green zone! (1 Shot Only)',
+      gameData: { zoneStart: start, zoneEnd: start + w, speed: 1.65, attempts: 1 },
+    };
+  },
+
+  // 🎁 Lucky Pick: 4 vaults, Strictly 1 Choice
+  luck_pick: (r, pool) => ({
+    q: '🎁 Vault Breach: Pick the 1 winning vault among 4! (1 Choice Only)',
+    gameData: {
+      slots: 4,
+      icon: sample(r, ['🔒', '💼', '📦', '🚪', '🛡️'], 1)[0],
+      prize: pool[0] || '🏆',
+      attempts: 1,
+    },
+  }),
+
+  // 🗂️ Sort It: 5 items, Zero Mistakes Allowed
+  sort_bucket: (r, _pool, i) => {
+    const setIdx = (i + Math.floor(r() * SORT_SETS.length)) % SORT_SETS.length;
+    return {
+      q: '🗂️ Sort It: Classify 5 items! (Zero Mistakes Allowed)',
+      gameData: { ...SORT_SETS[setIdx], mistakes: 1, attempts: 1 },
+    };
+  },
+
+  // 🔢 Pattern Ninja: Multi-step pattern, 4 options, 1 Guess Only
+  pattern_quiz: (r, pool) => {
+    const [a, b, c] = sample(r, pool, 3);
+    const patternType = Math.floor(r() * 3);
+    let pattern;
+    let answer;
+
+    if (patternType === 0) {
+      pattern = [a, b, a, b];
+      answer = a;
+    } else if (patternType === 1) {
+      pattern = [a, a, b, a, a];
+      answer = b;
+    } else {
+      pattern = [a, b, c, a, b];
+      answer = c;
+    }
+
+    const optionSet = new Set([answer, a, b, c]);
+    if (optionSet.size < 4 && pool.length > 3) {
+      for (const p of pool) {
+        optionSet.add(p);
+        if (optionSet.size >= 4) break;
+      }
+    }
+    const options = sample(r, Array.from(optionSet).slice(0, 4), 4);
+
+    return {
+      q: `🔢 Logic Pattern: ${pattern.join(' ')} → ? (1 Guess Only)`,
+      gameData: { pattern, options, answer, attempts: 1 },
+    };
+  },
+
+  // 🎤 Crowd Judge: 6-second physical summit challenge with single vote
+  crowd_judge: (r, _pool, i) => {
+    const c = CROWD_CHALLENGES[(i + Math.floor(r() * CROWD_CHALLENGES.length)) % CROWD_CHALLENGES.length];
+    return {
+      q: `🎤 Crowd Challenge: ${c.challenge}`,
+      gameData: { ...c, durationSec: 6, attempts: 1 },
+    };
+  },
+};
+
+const GAME_TYPES = Object.keys(GAME_BUILDERS);
+
+function buildFunnyGameItem(spec, index) {
+  const r = rng(index * 9301 + spec.num * 49297 + spec.id.charCodeAt(Math.min(6, spec.id.length - 1)));
+  const gameType = GAME_TYPES[index % GAME_TYPES.length];
+  const skin = BOOTH_SKIN[spec.id] || BOOTH_SKIN['booth-1'];
+
+  const boothPool = POOLS[skin.pool] || POOLS.tech;
+  const rotatingPool = POOLS[POOL_KEYS[index % POOL_KEYS.length]];
+  const pool = [...new Set([...boothPool, ...rotatingPool])];
+
+  const { q, gameData } = GAME_BUILDERS[gameType](r, pool, index);
+  const winMsg = skin.win[index % skin.win.length];
+  const loseMsg = skin.lose[index % skin.lose.length];
+
+  return {
+    id: `${spec.id}_game_${index + 1}`,
+    category: 'Mini Game',
+    difficulty: 'easy',
+    question: q,
+    itemType: 'game',
+    gameType,
+    gameData: { ...gameData, winMsg, loseMsg },
+    options: ['Challenge Incomplete', 'Challenge Completed! 🎉'],
+    correctAnswer: 1,
+  };
+}
+
+// Generates 3,000 MCQs and 2,000 Fun Emoji Games for each booth (Total: 5,000 items)
+function generateBoothBank(spec, mcqCount = 3000, gameCount = 2000) {
   const bank = [];
   const totalScenarios = spec.scenarios.length;
 
-  for (let i = 0; i < targetCount; i++) {
+  // 1. Generate 3,000 MCQs
+  for (let i = 0; i < mcqCount; i++) {
     const scen = spec.scenarios[i % totalScenarios];
     const sys = spec.systems[i % spec.systems.length];
     const num = ((i * 17 + 23) % 97) + 3;
 
-    // Generate prompt with dynamic variables
     const promptText = scen.prompt(sys, num);
 
-    // Build options
     const resolve = (val) => (typeof val === 'function' ? val(sys, num) : val);
     const correctOption = resolve(scen.correct);
     const plausibleOptions = shuffle(scen.plausible);
@@ -549,8 +1209,15 @@ function generateBoothBank(spec, targetCount = 5000) {
       difficulty,
       question: promptText,
       options: shuffledOptions,
-      correctAnswer: correctAnswerIndex
+      correctAnswer: correctAnswerIndex,
+      itemType: 'mcq',
     });
+  }
+
+  // 2. Generate 2,000 Funny Emoji Games
+  for (let j = 0; j < gameCount; j++) {
+    const game = buildFunnyGameItem(spec, j);
+    bank.push(game);
   }
 
   return bank;
@@ -558,14 +1225,16 @@ function generateBoothBank(spec, targetCount = 5000) {
 
 const DATA_DIR = path.join(__dirname, '..', 'src', 'data');
 
-console.log('🚀 Starting massive generation of 5,000 unique questions per booth...\n');
+console.log('🚀 Starting generation of 3,000 MCQs + 2,000 Funny Games per booth (Total: 5,000 items/booth)...\n');
 
 for (const spec of BOOTH_SPECS) {
-  console.log(`Generating 5,000 questions for Booth ${spec.num} (${spec.title})...`);
-  const bank = generateBoothBank(spec, 5000);
+  console.log(`Generating 3,000 MCQs + 2,000 Games for Booth ${spec.num} (${spec.title})...`);
+  const bank = generateBoothBank(spec, 3000, 2000);
   const filePath = path.join(DATA_DIR, `${spec.id}.json`);
   fs.writeFileSync(filePath, JSON.stringify(bank, null, 2), 'utf-8');
-  console.log(`✓ Wrote ${bank.length.toLocaleString()} questions to src/data/${spec.id}.json\n`);
+  console.log(`✓ Wrote ${bank.length.toLocaleString()} items to src/data/${spec.id}.json\n`);
 }
 
-console.log('🎉 SUCCESS: All 9 booths now have 5,000 unique questions each (Total: 45,000 questions)!');
+console.log('🎉 SUCCESS: All 9 booths now have 3,000 MCQs + 2,000 Funny Games each (Total: 45,000 items)!');
+
+

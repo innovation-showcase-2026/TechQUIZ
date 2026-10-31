@@ -20,7 +20,7 @@ const firebaseConfig = {
   projectId: "innovation-showcase-2026",
   storageBucket: "innovation-showcase-2026.firebasestorage.app",
   messagingSenderId: "577856466009",
-  appId: "1:577856466009:web:7fe373b4d1771de3655548",
+  appId: "1:577856466009:web:7fe373b4d1771de3655548"
 };
 
 // Initialize Firebase singleton
